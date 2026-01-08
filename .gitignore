@@ -1,0 +1,49 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+.DS_Store
+*.swp
+*~
+.vscode/
+out/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Visual Studio
+.vs/
+.vscode/
+*.jsproj
+*.metaproj
+*.sln.iml
+
+# User-specific
+[Uu]ser[Ss]pecific
+[Pp]ublish
+
+# Build outputs
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+# IDE files
+.idea/
+*.sln.iml
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Test coverage
+coverage/
+.coverage
+htmlcov/
+
+# Local app data (config files, screenshots)
+AppData/

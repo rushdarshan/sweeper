@@ -1,0 +1,35 @@
+<Page x:Class="ScreenshotSweeper.Views.MonitorTab"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      Title="Monitor">
+
+    <Grid Background="{DynamicResource ApplicationBackgroundBrush}">
+        <StackPanel Margin="20">
+            <TextBlock x:Name="StatusText" 
+                       FontSize="16" 
+                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                       Margin="0,0,0,20"
+                       Text="📊 Monitoring: 0 files | 0 B | Next cleanup in..."/>
+            
+            <DataGrid x:Name="FileListGrid"
+                      Height="400"
+                      Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                      AutoGenerateColumns="True"
+                      CanUserAddRows="False"
+                      CanUserDeleteRows="False">
+            </DataGrid>
+
+            <TextBlock x:Name="EmptyMessage"
+                       Text="No screenshots tracked. Take a screenshot to get started!"
+                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                       FontSize="14"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       Visibility="Visible"
+                       Margin="0,50,0,0"/>
+        </StackPanel>
+    </Grid>
+</Page>
