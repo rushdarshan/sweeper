@@ -76,14 +76,43 @@ namespace ScreenshotSweeper
                 TrayService.UpdateStatus(files.Count, totalBytes, true);
             };
 
-            // Handle notification actions - simplified
-            // ToastNotificationManagerCompat.OnActivated += toastArgs =>
-            // {
-            //      // Dispatch to UI thread if needed
-            //      Dispatcher.Invoke(() => {
-            //         // Logic handled in previous context
-            //      });
-            // };
+            // Handle notification actions
+            ToastNotificationManagerCompat.OnActivated += toastArgs =>
+            {
+                // Parse arguments from notification button clicks
+                ToastArguments args = ToastArguments.Parse(toastArgs.Argument);
+                
+                string? filePath = null;
+                if (args.TryGetValue("path", out var path))
+                    filePath = path;
+                
+                if (string.IsNullOrEmpty(filePath))
+                    return;
+                
+                // Handle different actions
+                if (args.TryGetValue(Constants.ACTION_SET_TIMER, out var timerValue))
+                {
+                    int minutes = timerValue switch
+                    {
+                        "15_min" => 15,
+                        "30_min" => 30,
+                        "1_hour" => 60,
+                        _ => 30
+                    };
+                    
+                    CleanupService?.UpdateDeleteTime(filePath, minutes, TimeUnit.Minutes);
+                    System.Console.WriteLine($"[App] Timer set to {minutes} minutes for: {filePath}");
+                }
+                else if (args.TryGetValue(Constants.ACTION_KEEP, out _))
+                {
+                    var config = ConfigService?.LoadConfig();
+                    if (config != null)
+                    {
+                        CleanupService?.MoveToKeep(filePath, config.KeepFolderPath);
+                        System.Console.WriteLine($"[App] File moved to Keep folder: {filePath}");
+                    }
+                }
+            };
         }
 
         protected override void OnExit(ExitEventArgs e)

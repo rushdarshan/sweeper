@@ -33,7 +33,7 @@ namespace ScreenshotSweeper.Services
 
             try
             {
-                var toastContent = new ToastContentBuilder()
+                new ToastContentBuilder()
                     .AddText("📸 New Screenshot Detected")
                     .AddText(file.FileName)
                     .AddText($"Size: {file.FileSizeFormatted} | Auto-delete in: {deleteTimeText}")
@@ -57,14 +57,15 @@ namespace ScreenshotSweeper.Services
                     .AddButton(new ToastButton()
                         .SetContent("Keep")
                         .AddArgument(Constants.ACTION_KEEP, "true")
-                        .AddArgument("path", file.FilePath));
+                        .AddArgument("path", file.FilePath))
+                    
+                    .Show(); // ACTUALLY SHOW THE NOTIFICATION!
 
-                // Toast notifications queued
-                System.Console.WriteLine($"[Notification] Queued detection notification for: {file.FileName}");
+                System.Console.WriteLine($"[Notification] Sent detection notification for: {file.FileName}");
             }
             catch (System.Exception ex)
             {
-                System.Console.WriteLine($"[Notification] Error queuing detection notification: {ex.Message}");
+                System.Console.WriteLine($"[Notification] Error sending detection notification: {ex.Message}");
             }
         }
 
@@ -78,11 +79,17 @@ namespace ScreenshotSweeper.Services
 
             try
             {
-                System.Console.WriteLine($"[Notification] Queued deletion notification for: {file.FileName}");
+                new ToastContentBuilder()
+                    .AddText("🗑️ Screenshot Deleted")
+                    .AddText(file.FileName)
+                    .AddText($"Size: {file.FileSizeFormatted}")
+                    .Show();
+                    
+                System.Console.WriteLine($"[Notification] Sent deletion notification for: {file.FileName}");
             }
             catch (System.Exception ex)
             {
-                System.Console.WriteLine($"[Notification] Error queuing deletion notification: {ex.Message}");
+                System.Console.WriteLine($"[Notification] Error sending deletion notification: {ex.Message}");
             }
         }
 
@@ -93,11 +100,16 @@ namespace ScreenshotSweeper.Services
         {
             try
             {
+                new ToastContentBuilder()
+                    .AddText(title)
+                    .AddText(message)
+                    .Show();
+                    
                 System.Console.WriteLine($"[Notification] {title}: {message}");
             }
             catch (System.Exception ex)
             {
-                System.Console.WriteLine($"[Notification] Error queuing info notification: {ex.Message}");
+                System.Console.WriteLine($"[Notification] Error sending info notification: {ex.Message}");
             }
         }
     }

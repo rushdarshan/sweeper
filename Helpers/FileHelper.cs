@@ -32,7 +32,7 @@ namespace ScreenshotSweeper.Helpers
         /// <summary>
         /// Gets file size in bytes, with retry logic for locked files
         /// </summary>
-        public static long GetFileSize(string filePath, int retries = 3)
+        public static long GetFileSize(string filePath, int retries = 5)
         {
             for (int i = 0; i < retries; i++)
             {
@@ -41,12 +41,22 @@ namespace ScreenshotSweeper.Helpers
                     if (!File.Exists(filePath))
                         return 0;
 
+                    // Force refresh the file info to get accurate size
                     var fileInfo = new FileInfo(filePath);
+                    fileInfo.Refresh();
+                    
+                    // If size is 0, the file might still be writing - retry
+                    if (fileInfo.Length == 0 && i < retries - 1)
+                    {
+                        System.Threading.Thread.Sleep(500);
+                        continue;
+                    }
+                    
                     return fileInfo.Length;
                 }
                 catch (IOException) when (i < retries - 1)
                 {
-                    System.Threading.Thread.Sleep(100);
+                    System.Threading.Thread.Sleep(500);
                 }
                 catch
                 {

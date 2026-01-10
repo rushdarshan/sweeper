@@ -47,13 +47,11 @@ namespace ScreenshotSweeper.Views
 
         private void UpdateMonitoringStatus(bool isActive)
         {
-            // Use simple text/color updates to avoid dependency on specific Wpf.Ui enum namespace which caused build errors
             if (isActive)
             {
                 StatusLabel.Text = "Monitoring Active";
                 StatusLabel.Foreground = new SolidColorBrush(Colors.Green);
                 ToggleMonitoringBtn.Content = "Pause Monitoring";
-                // Icon update omitted to avoid namespace issues
             }
             else
             {
@@ -81,7 +79,7 @@ namespace ScreenshotSweeper.Views
 
         private void ResetSettings(object sender, RoutedEventArgs e)
         {
-            var config = new Models.AppConfig(); // Default values
+            var config = new Models.AppConfig();
             _configService.SaveConfig(config);
             LoadSettings();
             SaveStatus.Text = "Reset to defaults.";

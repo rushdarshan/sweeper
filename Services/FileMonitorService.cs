@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ScreenshotSweeper.Helpers;
 using ScreenshotSweeper.Models;
 
@@ -12,13 +13,16 @@ namespace ScreenshotSweeper.Services
     public class FileMonitorService
     {
         private FileSystemWatcher? _watcher;
-        private readonly AppConfig _config;
+        private AppConfig _config;
         private readonly List<string> _trackedFiles = new();
         private bool _isMonitoring;
+        
+        // DUPLICATE PREVENTION: Track recently added files to ignore duplicate events
+        private readonly HashSet<string> _recentlyAddedFiles = new();
+        private const int DUPLICATE_TIMEOUT_MS = 5000; // 5 seconds
 
         public event Action<ScreenshotMetadata>? FileDetected;
         public event Action<string>? FileDeleted;
-        // event Action<List<ScreenshotMetadata>>? FilesChanged; // Unused, removing
 
         public FileMonitorService(AppConfig config)
         {
@@ -95,13 +99,27 @@ namespace ScreenshotSweeper.Services
 
         private void OnFileCreated(object sender, FileSystemEventArgs e)
         {
+            // DUPLICATE PREVENTION: Ignore if file was recently added
+            if (_recentlyAddedFiles.Contains(e.FullPath))
+            {
+                Console.WriteLine($"[FileMonitor] DUPLICATE IGNORED: {Path.GetFileName(e.FullPath)}");
+                return;
+            }
+
             if (FileHelper.IsValidScreenshot(e.FullPath, _config.AllowedExtensions))
             {
-                // Small delay to ensure file is fully written
-                System.Threading.Thread.Sleep(500);
+                // Longer delay to ensure file is fully written (screenshots can be large)
+                System.Threading.Thread.Sleep(1500);
 
                 if (File.Exists(e.FullPath) && !_trackedFiles.Contains(e.FullPath))
                 {
+                    // Mark file as recently added to prevent duplicate processing
+                    _recentlyAddedFiles.Add(e.FullPath);
+                    
+                    // Remove from recently added list after timeout
+                    _ = System.Threading.Tasks.Task.Delay(DUPLICATE_TIMEOUT_MS)
+                        .ContinueWith(_ => _recentlyAddedFiles.Remove(e.FullPath));
+
                     _trackedFiles.Add(e.FullPath);
 
                     var metadata = FileHelper.CreateMetadata(
@@ -109,7 +127,7 @@ namespace ScreenshotSweeper.Services
                         TimeHelper.CalculateDeleteTime(_config.DeleteThresholdValue, _config.DeleteThresholdUnit)
                     );
 
-                    Console.WriteLine($"[FileMonitor] Detected: {metadata.FileName}");
+                    Console.WriteLine($"[FileMonitor] Detected: {metadata.FileName} at {DateTime.Now:HH:mm:ss.fff}");
                     FileDetected?.Invoke(metadata);
                 }
             }
@@ -142,11 +160,16 @@ namespace ScreenshotSweeper.Services
         /// </summary>
         public void Reconfigure(AppConfig config)
         {
+            // Stop current monitoring
+            StopMonitoring();
+            
+            // Update config reference
+            _config = config;
             _trackedFiles.Clear();
-            _config.ScreenshotFolderPath = config.ScreenshotFolderPath;
-            _config.DeleteThresholdValue = config.DeleteThresholdValue;
-            _config.DeleteThresholdUnit = config.DeleteThresholdUnit;
-            Console.WriteLine("[FileMonitor] Reconfigured with new settings");
+            _recentlyAddedFiles.Clear();
+            
+            Console.WriteLine($"[FileMonitor] Reconfigured - New folder: {config.ScreenshotFolderPath}");
+            Console.WriteLine($"[FileMonitor] Delete threshold: {config.DeleteThresholdValue} {config.DeleteThresholdUnit}");
         }
     }
 }

@@ -1,10 +1,11 @@
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media;
 using Wpf.Ui.Controls;
 using Wpf.Ui.Appearance;
 using ScreenshotSweeper.Views;
-using System.Collections.Generic;
 using System;
-using System.Linq;
 
 namespace ScreenshotSweeper
 {
@@ -13,27 +14,43 @@ namespace ScreenshotSweeper
         public MainWindow()
         {
             InitializeComponent();
-            // SystemThemeWatcher removed to enforce Dark theme set in App.xaml
+            
+            // Navigate to Monitor tab on startup
+            Loaded += MainWindow_Loaded;
         }
 
-        private void NavView_Loaded(object sender, RoutedEventArgs e)
+        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // Initial navigation to Monitor tab
+            // Navigate to Monitor tab as the default page
             NavView.Navigate(typeof(MonitorTab));
+            Console.WriteLine("[MainWindow] Initial navigation to MonitorTab complete");
         }
 
-        private void NavView_SelectionChanged(object sender, RoutedEventArgs e)
+        private void NavView_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
         {
-            if (sender is NavigationView navView &&
-                navView.SelectedItem is NavigationViewItem selectedItem &&
-                selectedItem.TargetPageType != null)
+            // Find the ScrollViewer in the current page content and scroll it
+            var scrollViewer = FindDescendant<ScrollViewer>(NavView);
+            if (scrollViewer != null)
             {
-                var instance = Activator.CreateInstance(selectedItem.TargetPageType);
-                if (instance != null)
-                {
-                    ContentFrame.Navigate(instance);
-                }
+                scrollViewer.ScrollToVerticalOffset(scrollViewer.VerticalOffset - (e.Delta / 2.0));
+                e.Handled = true;
             }
+        }
+
+        private static T? FindDescendant<T>(DependencyObject parent) where T : DependencyObject
+        {
+            int childCount = VisualTreeHelper.GetChildrenCount(parent);
+            for (int i = 0; i < childCount; i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T found)
+                    return found;
+                
+                var result = FindDescendant<T>(child);
+                if (result != null)
+                    return result;
+            }
+            return null;
         }
     }
 }

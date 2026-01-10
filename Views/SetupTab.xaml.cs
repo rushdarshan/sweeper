@@ -1,7 +1,9 @@
+using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Media;
+using System.Windows.Input;
 using System.Collections.Generic;
 using ScreenshotSweeper.Helpers;
 using ScreenshotSweeper.Models;
@@ -32,9 +34,13 @@ namespace ScreenshotSweeper.Views
         private void LoadSettings()
         {
             var config = _configService.LoadConfig();
-            FolderPathTextBox.Text = config.ScreenshotFolderPath;
-            KeepFolderTextBox.Text = config.KeepFolderPath;
-            DeleteTimeValue.Text = config.DeleteThresholdValue.ToString();
+            FolderPathTextBox.Text = string.IsNullOrEmpty(config.ScreenshotFolderPath) 
+                ? "Select a folder..." 
+                : config.ScreenshotFolderPath;
+            KeepFolderTextBox.Text = string.IsNullOrEmpty(config.KeepFolderPath) 
+                ? "Auto-generated in screenshot folder" 
+                : config.KeepFolderPath;
+            DeleteTimeValue.Value = config.DeleteThresholdValue;
             TimeUnitSelector.SelectedIndex = (int)config.DeleteThresholdUnit;
             
             UpdatePresetVisuals();
@@ -99,7 +105,17 @@ namespace ScreenshotSweeper.Views
         private void SaveSettings(object sender, RoutedEventArgs e)
         {
             var config = _configService.LoadConfig();
-            config.ScreenshotFolderPath = FolderPathTextBox.Text;
+            
+            // Get folder path - use actual value if not placeholder
+            string folderPath = FolderPathTextBox.Text;
+            if (folderPath == "Select a folder..." || string.IsNullOrWhiteSpace(folderPath))
+            {
+                StatusMessage.Text = "❌ Please select a screenshot folder";
+                StatusMessage.Foreground = new SolidColorBrush(Colors.Red);
+                return;
+            }
+            
+            config.ScreenshotFolderPath = folderPath;
             
             // Parse delete time value
             double val = DeleteTimeValue.Value ?? 0;
@@ -119,19 +135,38 @@ namespace ScreenshotSweeper.Views
             if (!ValidateSettings(config))
                 return;
 
+            // Create keep folder if it doesn't exist
+            if (!System.IO.Directory.Exists(config.KeepFolderPath))
+            {
+                try
+                {
+                    System.IO.Directory.CreateDirectory(config.KeepFolderPath);
+                }
+                catch (Exception ex)
+                {
+                    StatusMessage.Text = $"❌ Could not create Keep folder: {ex.Message}";
+                    StatusMessage.Foreground = new SolidColorBrush(Colors.Red);
+                    return;
+                }
+            }
+
             _configService.SaveConfig(config);
             
-            // Restart services
+            // Restart services with new config
             App.FileMonitorService?.StopMonitoring();
             App.CleanupService?.Stop();
             
+            // Reconfigure and restart
             App.FileMonitorService?.Reconfigure(config);
+            App.NotificationService?.UpdateConfig(config);
             App.FileMonitorService?.StartMonitoring();
             App.CleanupService?.Start();
             
-            StatusMessage.Text = "✅ Settings saved!";
+            StatusMessage.Text = "✅ Settings saved! Monitoring started.";
             StatusMessage.Foreground = new SolidColorBrush(Colors.Green);
             KeepFolderTextBox.Text = config.KeepFolderPath;
+            
+            System.Console.WriteLine($"[SetupTab] Settings saved - Folder: {config.ScreenshotFolderPath}");
         }
 
         private bool ValidateSettings(AppConfig config)

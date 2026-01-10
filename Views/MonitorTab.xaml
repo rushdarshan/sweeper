@@ -3,33 +3,266 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d"
-      Title="Monitor">
+      Title="Monitor"
+      Background="#1A1A1A"
+      Foreground="#FFFFFF">
 
-    <Grid Background="{DynamicResource ApplicationBackgroundBrush}">
-        <StackPanel Margin="20">
-            <TextBlock x:Name="StatusText" 
-                       FontSize="16" 
-                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
-                       Margin="0,0,0,20"
-                       Text="📊 Monitoring: 0 files | 0 B | Next cleanup in..."/>
-            
-            <DataGrid x:Name="FileListGrid"
-                      Height="400"
-                      Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                      AutoGenerateColumns="True"
-                      CanUserAddRows="False"
-                      CanUserDeleteRows="False">
-            </DataGrid>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
 
-            <TextBlock x:Name="EmptyMessage"
-                       Text="No screenshots tracked. Take a screenshot to get started!"
-                       Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+        <!-- Top Toolbar -->
+        <Border Grid.Row="0" Background="#1A1A1A" Padding="20,16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Left: Action Buttons -->
+                <StackPanel Orientation="Horizontal" Grid.Column="0">
+                    <Button x:Name="ClearAllBtn" Click="OnClearAllClick"
+                            Background="#2D2D2D" BorderThickness="0"
+                            Padding="16,8" Margin="0,0,8,0">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Delete24" FontSize="16" Margin="0,0,8,0" Foreground="#9B8AFF"/>
+                            <TextBlock Text="Clear All" Foreground="#FFFFFF"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <Button x:Name="RefreshBtn" Click="OnRefreshClick"
+                            Background="#2D2D2D" BorderThickness="0"
+                            Padding="16,8">
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Margin="0,0,8,0" Foreground="#9B8AFF"/>
+                            <TextBlock Text="Refresh" Foreground="#FFFFFF"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+                
+                <!-- Right: Search Box -->
+                <Border Grid.Column="2" Background="#2D2D2D" CornerRadius="4" Padding="12,8">
+                    <StackPanel Orientation="Horizontal">
+                        <ui:SymbolIcon Symbol="Search24" FontSize="16" Foreground="#808080" Margin="0,0,8,0"/>
+                        <TextBox x:Name="SearchBox" 
+                                 Background="Transparent" 
+                                 BorderThickness="0"
+                                 Foreground="#FFFFFF"
+                                 Width="180"
+                                 VerticalAlignment="Center"
+                                 CaretBrush="#FFFFFF"
+                                 TextChanged="OnSearchTextChanged"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- Column Headers -->
+        <Border Grid.Row="1" Background="#1E1E1E" Padding="20,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="40"/>
+                    <ColumnDefinition Width="*" MinWidth="250"/>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="120"/>
+                    <ColumnDefinition Width="140"/>
+                </Grid.ColumnDefinitions>
+                
+                <CheckBox x:Name="SelectAllCheckBox" Grid.Column="0" 
+                          VerticalAlignment="Center"
+                          Checked="OnSelectAllChecked" Unchecked="OnSelectAllUnchecked"/>
+                
+                <TextBlock Grid.Column="1" Text="⬍ Name" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="⬍ Size" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="3" Text="⬍ Status" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="4" Text="⬍ Time Left" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="5" Text="⬍ Detected" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- File List -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Background="#1A1A1A">
+            <ItemsControl x:Name="FileListControl">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border x:Name="RowBorder" Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="#2D2D2D"
+                                Background="Transparent">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Style.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter Property="Background" Value="#252525"/>
+                                        </Trigger>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Background" Value="#2A2850"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="40"/>
+                                    <ColumnDefinition Width="*" MinWidth="250"/>
+                                    <ColumnDefinition Width="100"/>
+                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="140"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <!-- Checkbox -->
+                                <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" 
+                                          VerticalAlignment="Center"/>
+                                
+                                <!-- File Name with Icon -->
+                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Border Background="#2D2D2D" CornerRadius="4" Padding="8" Margin="0,0,12,0">
+                                        <ui:SymbolIcon Symbol="Image24" FontSize="18" Foreground="#9B8AFF"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding FileName}" 
+                                                   Foreground="#FFFFFF" 
+                                                   FontSize="14"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   MaxWidth="220"/>
+                                        <TextBlock Text="Image" 
+                                                   Foreground="#606060" 
+                                                   FontSize="11"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                
+                                <!-- Size -->
+                                <TextBlock Grid.Column="2" 
+                                           Text="{Binding FileSizeFormatted}" 
+                                           Foreground="#FFFFFF" 
+                                           VerticalAlignment="Center"/>
+                                
+                                <!-- Status with Progress -->
+                                <StackPanel Grid.Column="3" VerticalAlignment="Center">
+                                    <TextBlock VerticalAlignment="Center" FontSize="13">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Text" Value="Scheduled"/>
+                                                <Setter Property="Foreground" Value="#4CAF50"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding IsUrgent}" Value="True">
+                                                        <Setter Property="Text" Value="Deleting Soon"/>
+                                                        <Setter Property="Foreground" Value="#F44336"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                                                        <Setter Property="Text" Value="Warning"/>
+                                                        <Setter Property="Foreground" Value="#FFC107"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                    <!-- Progress bar showing time remaining -->
+                                    <Border Height="3" CornerRadius="2" Background="#2D2D2D" Margin="0,4,16,0">
+                                        <Border x:Name="ProgressFill" 
+                                                HorizontalAlignment="Left"
+                                                CornerRadius="2"
+                                                Width="{Binding ProgressWidth}">
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Setter Property="Background" Value="#4CAF50"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsUrgent}" Value="True">
+                                                            <Setter Property="Background" Value="#F44336"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                                                            <Setter Property="Background" Value="#FFC107"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                        </Border>
+                                    </Border>
+                                </StackPanel>
+                                
+                                <!-- Time Left -->
+                                <TextBlock Grid.Column="4" 
+                                           Text="{Binding TimeUntilDeletionFormatted}" 
+                                           VerticalAlignment="Center"
+                                           FontWeight="SemiBold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Foreground" Value="#4CAF50"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                                                    <Setter Property="Foreground" Value="#FFC107"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding IsUrgent}" Value="True">
+                                                    <Setter Property="Foreground" Value="#F44336"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                
+                                <!-- Detected Time -->
+                                <TextBlock Grid.Column="5" 
+                                           Text="{Binding DetectedAtFormatted}" 
+                                           Foreground="#808080" 
+                                           VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        
+        <!-- Empty State -->
+        <StackPanel x:Name="EmptyMessage"
+                   Grid.Row="2"
+                   VerticalAlignment="Center"
+                   HorizontalAlignment="Center"
+                   Visibility="Collapsed">
+            <Border Background="#2D2D2D" CornerRadius="8" Padding="16" HorizontalAlignment="Center" Margin="0,0,0,16">
+                <ui:SymbolIcon Symbol="Image24" FontSize="48" Foreground="#9B8AFF"/>
+            </Border>
+            <TextBlock Text="No screenshots tracked"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Foreground="#FFFFFF"/>
+            <TextBlock Text="Take a screenshot to get started!"
                        FontSize="14"
                        HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Visibility="Visible"
-                       Margin="0,50,0,0"/>
+                       Margin="0,4,0,0"
+                       Foreground="#606060"/>
         </StackPanel>
+
+        <!-- Bottom Status Bar -->
+        <Border Grid.Row="3" Background="#1E1E1E" Padding="20,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock x:Name="StatusText" 
+                           Grid.Column="0"
+                           Foreground="#808080" 
+                           VerticalAlignment="Center"
+                           Text="📊 0 files tracked"/>
+                
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <ui:SymbolIcon Symbol="Clock24" FontSize="14" Foreground="#808080" Margin="0,0,6,0"/>
+                    <TextBlock x:Name="NextCleanupText" 
+                               Foreground="#808080" 
+                               VerticalAlignment="Center"
+                               Text="Next cleanup: --"/>
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
+    
 </Page>
