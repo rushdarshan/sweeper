@@ -88,13 +88,19 @@
             </Grid>
         </Border>
 
-        <!-- File List -->
-        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Background="#1A1A1A">
-            <ItemsControl x:Name="FileListControl">
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Border x:Name="RowBorder" Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="#2D2D2D"
-                                Background="Transparent">
+        <!-- File List + Preview -->
+        <Grid Grid.Row="2" Background="#1A1A1A">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#1A1A1A" Grid.Column="0">
+                <ItemsControl x:Name="FileListControl">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border x:Name="RowBorder" Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="#2D2D2D"
+                                    Background="Transparent" MouseLeftButtonUp="OnRowClick">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Style.Triggers>
@@ -217,11 +223,38 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-        </ScrollViewer>
+            </ScrollViewer>
+
+            <!-- Preview Panel -->
+            <StackPanel x:Name="PreviewPanel" Grid.Column="1" Background="#161616" Margin="12,0,0,0" Visibility="Collapsed">
+                <TextBlock Text="Preview" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
+                <Border Height="1" Background="#2D2D2D" Margin="0,0,0,12"/>
+
+                <Border Background="#0F0F0F" CornerRadius="8" Padding="8" Margin="0,0,0,12" BorderBrush="#2D2D2D" BorderThickness="1">
+                    <Grid>
+                        <Image x:Name="PreviewImage" Stretch="Uniform" MaxHeight="320" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock x:Name="PreviewErrorText" Text="Preview unavailable" Foreground="#808080" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
+                    </Grid>
+                </Border>
+
+                <StackPanel Margin="0,0,0,12">
+                    <TextBlock x:Name="PreviewName" Foreground="#FFFFFF" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock x:Name="PreviewSize" Foreground="#A0A0A0" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="PreviewDetected" Foreground="#A0A0A0" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="PreviewTimeLeft" Foreground="#A0A0A0" Margin="0,2,0,0"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                    <Button x:Name="OpenFileButton" Click="OnOpenFileClick" Content="Open Image" Padding="12,6" Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0" Margin="0,0,8,0"/>
+                    <Button x:Name="OpenFolderButton" Click="OnOpenFolderClick" Content="Show in Folder" Padding="12,6" Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0"/>
+                </StackPanel>
+            </StackPanel>
+        </Grid>
         
         <!-- Empty State -->
         <StackPanel x:Name="EmptyMessage"
                    Grid.Row="2"
+                   Grid.ColumnSpan="2"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Visibility="Collapsed">

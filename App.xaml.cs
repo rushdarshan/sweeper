@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using System.Windows;
 using Microsoft.Toolkit.Uwp.Notifications;
 using ScreenshotSweeper.Helpers;
@@ -16,14 +18,46 @@ namespace ScreenshotSweeper
         public static TrayIconService? TrayService { get; private set; }
         public static NotificationService? NotificationService { get; private set; }
 
+        // Command line flags
+        private bool _setupMode = false;      // --setup: Run wizard only (installer mode)
+        private bool _startMinimized = false; // --minimized: Start minimized to tray
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            // Initialize services
+            // Parse command-line arguments
+            _setupMode = e.Args.Contains("--setup", StringComparer.OrdinalIgnoreCase);
+            _startMinimized = e.Args.Contains("--minimized", StringComparer.OrdinalIgnoreCase);
+
+            // Initialize config service
             ConfigService = new ConfigService();
             var config = ConfigService.LoadConfig();
 
+            // Setup mode: show wizard and exit (used by installer)
+            if (_setupMode)
+            {
+                var wizard = new SetupWizard();
+                wizard.ShowDialog();
+                Shutdown(0);
+                return;
+            }
+
+            // Normal startup: show wizard only if not configured
+            if (string.IsNullOrEmpty(config.ScreenshotFolderPath))
+            {
+                var wizard = new SetupWizard();
+                if (wizard.ShowDialog() != true)
+                {
+                    // User cancelled - exit app
+                    Shutdown(0);
+                    return;
+                }
+                // Reload config after user completes wizard
+                config = ConfigService.LoadConfig();
+            }
+
+            // Initialize other services with the (possibly updated) config
             NotificationService = new NotificationService(config);
             FileMonitorService = new FileMonitorService(config);
             CleanupService = new CleanupService(FileMonitorService, NotificationService);
@@ -41,31 +75,41 @@ namespace ScreenshotSweeper
                 System.Console.WriteLine("[App] Screenshot folder not configured - monitoring disabled");
             }
 
-            // Start minimized if configured
-            if (config.Startup.StartMinimized && MainWindow != null)
-            {
-                MainWindow.WindowState = WindowState.Minimized;
-                MainWindow.Hide();
-            }
-
-            // Ensure the main window is created and visible
+            // Create main window
             if (MainWindow == null)
             {
                 MainWindow = new MainWindow();
             }
 
-            // If the window is hidden or minimized, show and activate it so user can see it
-            try
-            {
-                if (MainWindow.WindowState == WindowState.Minimized)
-                    MainWindow.WindowState = WindowState.Normal;
+            // Determine if we should start minimized to tray
+            bool shouldMinimize = _startMinimized || config.Startup.StartMinimized;
+            bool showInTaskbar = config.Startup.ShowInTaskbar ?? true; // Default: show in taskbar
 
-                MainWindow.Show();
-                MainWindow.Activate();
-                MainWindow.Topmost = true;
-                MainWindow.Topmost = false;
+            if (shouldMinimize)
+            {
+                // Start minimized to system tray
+                MainWindow.WindowState = WindowState.Minimized;
+                MainWindow.ShowInTaskbar = showInTaskbar;
+                if (!showInTaskbar)
+                {
+                    MainWindow.Hide();
+                }
+                System.Console.WriteLine($"[App] Started minimized to tray (taskbar: {showInTaskbar})");
             }
-            catch { /* Non-fatal */ }
+            else
+            {
+                // Show window normally
+                try
+                {
+                    MainWindow.WindowState = WindowState.Normal;
+                    MainWindow.ShowInTaskbar = true; // Always show in taskbar when opening normally
+                    MainWindow.Show();
+                    MainWindow.Activate();
+                    MainWindow.Topmost = true;
+                    MainWindow.Topmost = false;
+                }
+                catch { /* Non-fatal */ }
+            }
 
             // Wire cleanup events to update tray
             CleanupService.StatusUpdated += (files) =>

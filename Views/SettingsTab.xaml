@@ -115,7 +115,7 @@
                             </Grid>
                         </Border>
                         
-                        <Border Background="#2D2D2D" CornerRadius="6" Padding="16,12">
+                        <Border Background="#2D2D2D" CornerRadius="6" Padding="16,12" Margin="0,0,0,8">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -126,6 +126,20 @@
                                     <TextBlock Text="Start in system tray instead of showing window" Foreground="#808080" FontSize="12"/>
                                 </StackPanel>
                                 <CheckBox x:Name="StartMinimized" Grid.Column="1" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <Border Background="#2D2D2D" CornerRadius="6" Padding="16,12">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="Show in taskbar when minimized" Foreground="#FFFFFF" FontWeight="Medium"/>
+                                    <TextBlock Text="Keep taskbar icon visible when app is minimized to tray" Foreground="#808080" FontSize="12"/>
+                                </StackPanel>
+                                <CheckBox x:Name="ShowInTaskbar" Grid.Column="1" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
                     </StackPanel>

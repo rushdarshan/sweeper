@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Timers;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using ScreenshotSweeper.Helpers;
 using ScreenshotSweeper.Models;
 using ScreenshotSweeper.Services;
@@ -16,6 +19,7 @@ namespace ScreenshotSweeper.Views
         private Timer? _refreshTimer;
         private List<ScreenshotMetadata> _currentFiles = new();
         private List<ScreenshotMetadata> _filteredFiles = new();
+        private ScreenshotMetadata? _previewFile;
 
         public MonitorTab()
         {
@@ -60,6 +64,12 @@ namespace ScreenshotSweeper.Views
             EmptyMessage.Visibility = _filteredFiles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
             
             UpdateStatusBar(_filteredFiles);
+
+            if (_previewFile == null && _filteredFiles.Count > 0)
+            {
+                _previewFile = _filteredFiles[0];
+            }
+            UpdatePreviewIfExists();
         }
 
         private void UpdateStatusBar(List<ScreenshotMetadata> files)
@@ -191,6 +201,102 @@ namespace ScreenshotSweeper.Views
                     FileHelper.DeleteFile(metadata.FilePath);
                     RefreshFileList(GetCurrentFiles());
                 }
+            }
+        }
+
+        private void OnRowClick(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Border border && border.DataContext is ScreenshotMetadata metadata)
+            {
+                _previewFile = metadata;
+                UpdatePreview(metadata);
+                e.Handled = true;
+            }
+        }
+
+        private void UpdatePreview(ScreenshotMetadata file)
+        {
+            PreviewPanel.Visibility = Visibility.Visible;
+            PreviewName.Text = file.FileName;
+            PreviewSize.Text = $"Size: {file.FileSizeFormatted}";
+            PreviewDetected.Text = $"Detected: {file.DetectedAtFormatted}";
+            PreviewTimeLeft.Text = $"Time left: {file.TimeUntilDeletionFormatted}";
+
+            PreviewImage.Source = null;
+            PreviewErrorText.Visibility = Visibility.Collapsed;
+
+            try
+            {
+                var bmp = new BitmapImage();
+                bmp.BeginInit();
+                bmp.CacheOption = BitmapCacheOption.OnLoad;
+                bmp.UriSource = new Uri(file.FilePath);
+                bmp.DecodePixelWidth = 600;
+                bmp.EndInit();
+                bmp.Freeze();
+                PreviewImage.Source = bmp;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MonitorTab] Preview load failed: {ex.Message}");
+                PreviewErrorText.Text = "Preview unavailable";
+                PreviewErrorText.Visibility = Visibility.Visible;
+            }
+        }
+
+        private void UpdatePreviewIfExists()
+        {
+            if (_previewFile == null)
+            {
+                PreviewPanel.Visibility = Visibility.Collapsed;
+                PreviewImage.Source = null;
+                return;
+            }
+
+            var match = _filteredFiles.FirstOrDefault(f => f.FilePath == _previewFile.FilePath);
+            if (match != null)
+            {
+                UpdatePreview(match);
+            }
+            else
+            {
+                PreviewPanel.Visibility = Visibility.Collapsed;
+                PreviewImage.Source = null;
+                _previewFile = null;
+            }
+        }
+
+        private void OnOpenFileClick(object sender, RoutedEventArgs e)
+        {
+            if (_previewFile == null) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = _previewFile.FilePath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MonitorTab] Failed to open file: {ex.Message}");
+            }
+        }
+
+        private void OnOpenFolderClick(object sender, RoutedEventArgs e)
+        {
+            if (_previewFile == null) return;
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{_previewFile.FilePath}\""
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MonitorTab] Failed to open folder: {ex.Message}");
             }
         }
 

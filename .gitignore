@@ -47,3 +47,8 @@ htmlcov/
 
 # Local app data (config files, screenshots)
 AppData/
+
+# Installer output
+Installer/
+*.exe
+!Setup.iss

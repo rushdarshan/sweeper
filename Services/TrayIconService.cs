@@ -35,11 +35,22 @@ namespace ScreenshotSweeper.Services
                 // Set a fallback icon using an embedded resource or default. System.Drawing.SystemIcons requires referencing System.Drawing.
                 try
                 {
-                    _trayIcon.Icon = System.Drawing.SystemIcons.Application; // Fallback icon
+                    // Prefer the app icon resource if available
+                    var exePath = AppDomain.CurrentDomain.BaseDirectory;
+                    var iconPath = Path.Combine(exePath, "Resources", "Icons", "sweeper.ico");
+                    if (File.Exists(iconPath))
+                    {
+                        _trayIcon.Icon = new System.Drawing.Icon(iconPath);
+                    }
+                    else
+                    {
+                        _trayIcon.Icon = System.Drawing.SystemIcons.Application; // Fallback icon
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // ignore if System.Drawing isn't available in current platform
+                    Console.WriteLine($"[TrayIconService] Could not load custom icon: {ex.Message}");
+                    // ignore and keep fallback
                 }
 
                 var contextMenu = new ContextMenuStrip();

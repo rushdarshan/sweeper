@@ -78,6 +78,7 @@ namespace ScreenshotSweeper.Models
     {
         public bool LaunchOnStartup { get; set; } = false;
         public bool StartMinimized { get; set; } = true;
+        public bool? ShowInTaskbar { get; set; } = true; // null = default (true), false = hide from taskbar when minimized
     }
 
     /// <summary>

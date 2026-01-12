@@ -27,6 +27,7 @@ namespace ScreenshotSweeper.Views
             PlaySoundNotif.IsChecked = config.Notifications.PlaySound;
             LaunchOnStartup.IsChecked = config.Startup.LaunchOnStartup;
             StartMinimized.IsChecked = config.Startup.StartMinimized;
+            ShowInTaskbar.IsChecked = config.Startup.ShowInTaskbar ?? true;
             
             UpdateMonitoringStatus(config.Monitoring.IsActive);
         }
@@ -69,6 +70,7 @@ namespace ScreenshotSweeper.Views
             config.Notifications.PlaySound = PlaySoundNotif.IsChecked == true;
             config.Startup.LaunchOnStartup = LaunchOnStartup.IsChecked == true;
             config.Startup.StartMinimized = StartMinimized.IsChecked == true;
+            config.Startup.ShowInTaskbar = ShowInTaskbar.IsChecked;
 
             _configService.SaveConfig(config);
             
