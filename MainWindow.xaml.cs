@@ -63,9 +63,36 @@ namespace ScreenshotSweeper
             e.Cancel = true;
             try
             {
+                // Hide from taskbar when minimized to tray
+                this.ShowInTaskbar = false;
                 this.Hide();
+                App.TrayService?.ShowInfo("ScreenshotSweeper", "Still running in the system tray");
+                Console.WriteLine("[MainWindow] Hidden to system tray");
             }
             catch { /* Non-fatal */ }
+        }
+
+        /// <summary>
+        /// Restores the window from the system tray.
+        /// Called by TrayIconService when user double-clicks the tray icon.
+        /// </summary>
+        public void RestoreFromTray()
+        {
+            try
+            {
+                this.Show();
+                this.ShowInTaskbar = true;
+                this.WindowState = WindowState.Normal;
+                this.Activate();
+                // Temporarily set topmost to force focus
+                this.Topmost = true;
+                this.Topmost = false;
+                Console.WriteLine("[MainWindow] Restored from system tray");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[MainWindow] Failed to restore from tray: {ex.Message}");
+            }
         }
     }
 }

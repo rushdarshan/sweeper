@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
+using System.Windows;
+using System.Windows.Resources;
 using ScreenshotSweeper.Helpers;
 using ScreenshotSweeper.Models;
 
@@ -32,26 +34,9 @@ namespace ScreenshotSweeper.Services
                 _trayIcon = new NotifyIcon();
                 _trayIcon.Visible = true;
                 _trayIcon.Text = "ScreenshotSweeper - Initializing";
-                // Set a fallback icon using an embedded resource or default. System.Drawing.SystemIcons requires referencing System.Drawing.
-                try
-                {
-                    // Prefer the app icon resource if available
-                    var exePath = AppDomain.CurrentDomain.BaseDirectory;
-                    var iconPath = Path.Combine(exePath, "Resources", "Icons", "sweeper.ico");
-                    if (File.Exists(iconPath))
-                    {
-                        _trayIcon.Icon = new System.Drawing.Icon(iconPath);
-                    }
-                    else
-                    {
-                        _trayIcon.Icon = System.Drawing.SystemIcons.Application; // Fallback icon
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[TrayIconService] Could not load custom icon: {ex.Message}");
-                    // ignore and keep fallback
-                }
+
+                // Load tray icon (prefers embedded pack resource; falls back to disk; last fallback is system icon)
+                _trayIcon.Icon = LoadTrayIcon();
 
                 var contextMenu = new ContextMenuStrip();
 
@@ -115,12 +100,10 @@ namespace ScreenshotSweeper.Services
 
         private void OnOpenApp(object? sender, EventArgs e)
         {
-            var mainWindow = System.Windows.Application.Current?.MainWindow;
+            var mainWindow = System.Windows.Application.Current?.MainWindow as MainWindow;
             if (mainWindow != null)
             {
-                mainWindow.Show();
-                mainWindow.WindowState = System.Windows.WindowState.Normal;
-                mainWindow.Activate();
+                mainWindow.RestoreFromTray();
             }
         }
 
@@ -139,6 +122,24 @@ namespace ScreenshotSweeper.Services
             // TODO: Navigate to settings tab in main window
         }
 
+        /// <summary>
+        /// Show a balloon tip in the system tray to inform the user.
+        /// </summary>
+        public void ShowInfo(string title, string message, int timeoutMs = 3000)
+        {
+            if (_trayIcon == null) return;
+            try
+            {
+                _trayIcon.BalloonTipTitle = title;
+                _trayIcon.BalloonTipText = message;
+                _trayIcon.ShowBalloonTip(timeoutMs);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TrayIconService] Failed to show balloon tip: {ex.Message}");
+            }
+        }
+
         private void OnExit(object? sender, EventArgs e)
         {
             if (_trayIcon != null)
@@ -146,6 +147,43 @@ namespace ScreenshotSweeper.Services
                 _trayIcon.Visible = false;
             }
             System.Windows.Application.Current?.Shutdown();
+        }
+
+        private System.Drawing.Icon LoadTrayIcon()
+        {
+            // Try pack resource first (works even when running single-file)
+            try
+            {
+                var uri = new Uri("pack://application:,,,/Resources/Icons/sweeper.ico");
+                StreamResourceInfo? sri = System.Windows.Application.GetResourceStream(uri);
+                if (sri != null)
+                {
+                    using var stream = sri.Stream;
+                    return new System.Drawing.Icon(stream);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TrayIconService] pack icon load failed: {ex.Message}");
+            }
+
+            // Fallback to file on disk (for unpacked/published builds)
+            try
+            {
+                var exePath = AppDomain.CurrentDomain.BaseDirectory;
+                var iconPath = Path.Combine(exePath, "Resources", "Icons", "sweeper.ico");
+                if (File.Exists(iconPath))
+                {
+                    return new System.Drawing.Icon(iconPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TrayIconService] file icon load failed: {ex.Message}");
+            }
+
+            // Last resort: generic application icon
+            return System.Drawing.SystemIcons.Application;
         }
 
         public void Dispose()

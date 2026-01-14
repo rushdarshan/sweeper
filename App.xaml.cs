@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Windows;
 using Microsoft.Toolkit.Uwp.Notifications;
 using ScreenshotSweeper.Helpers;
@@ -22,6 +23,10 @@ namespace ScreenshotSweeper
         private bool _setupMode = false;      // --setup: Run wizard only (installer mode)
         private bool _startMinimized = false; // --minimized: Start minimized to tray
 
+        // Single-instance mutex
+        private static Mutex? _instanceMutex;
+        private const string MutexName = "ScreenshotSweeper_SingleInstance_8F7A3C2E";
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
@@ -29,6 +34,17 @@ namespace ScreenshotSweeper
             // Prevent app from shutting down when main window closes —
             // we'll control shutdown explicitly (tray Exit menu calls Shutdown()).
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+            // Single-instance check: if another instance is running, bring it to front and exit
+            _instanceMutex = new Mutex(true, MutexName, out bool createdNew);
+            if (!createdNew)
+            {
+                // Another instance is already running — signal it to show window and exit
+                System.Console.WriteLine("[App] Another instance is already running. Exiting.");
+                BringExistingInstanceToFront();
+                Shutdown(0);
+                return;
+            }
 
             // Parse command-line arguments
             _setupMode = e.Args.Contains("--setup", StringComparer.OrdinalIgnoreCase);
@@ -66,6 +82,7 @@ namespace ScreenshotSweeper
             FileMonitorService = new FileMonitorService(config);
             CleanupService = new CleanupService(FileMonitorService, NotificationService);
             TrayService = new TrayIconService(ConfigService);
+            TrayService.ShowInfo("ScreenshotSweeper", "Running in the system tray");
 
             // Start monitoring if folder is configured
             if (!string.IsNullOrEmpty(config.ScreenshotFolderPath))
@@ -87,18 +104,14 @@ namespace ScreenshotSweeper
 
             // Determine if we should start minimized to tray
             bool shouldMinimize = _startMinimized || config.Startup.StartMinimized;
-            bool showInTaskbar = config.Startup.ShowInTaskbar ?? true; // Default: show in taskbar
 
             if (shouldMinimize)
             {
-                // Start minimized to system tray
+                // Start minimized to system tray — completely hidden, no taskbar entry
                 MainWindow.WindowState = WindowState.Minimized;
-                MainWindow.ShowInTaskbar = showInTaskbar;
-                if (!showInTaskbar)
-                {
-                    MainWindow.Hide();
-                }
-                System.Console.WriteLine($"[App] Started minimized to tray (taskbar: {showInTaskbar})");
+                MainWindow.ShowInTaskbar = false;
+                MainWindow.Hide();
+                System.Console.WriteLine("[App] Started minimized to system tray (hidden)");
             }
             else
             {
@@ -106,7 +119,7 @@ namespace ScreenshotSweeper
                 try
                 {
                     MainWindow.WindowState = WindowState.Normal;
-                    MainWindow.ShowInTaskbar = true; // Always show in taskbar when opening normally
+                    MainWindow.ShowInTaskbar = true;
                     MainWindow.Show();
                     MainWindow.Activate();
                     MainWindow.Topmost = true;
@@ -168,7 +181,57 @@ namespace ScreenshotSweeper
             FileMonitorService?.StopMonitoring();
             CleanupService?.Stop();
             TrayService?.Dispose();
+
+            // Release single-instance mutex
+            if (_instanceMutex != null)
+            {
+                _instanceMutex.ReleaseMutex();
+                _instanceMutex.Dispose();
+                _instanceMutex = null;
+            }
+
             base.OnExit(e);
         }
+
+        /// <summary>
+        /// Attempts to bring an existing instance's window to the foreground.
+        /// </summary>
+        private static void BringExistingInstanceToFront()
+        {
+            try
+            {
+                // Find existing window by process name and bring to front
+                var currentProcess = System.Diagnostics.Process.GetCurrentProcess();
+                var processes = System.Diagnostics.Process.GetProcessesByName(currentProcess.ProcessName);
+                foreach (var proc in processes)
+                {
+                    if (proc.Id != currentProcess.Id && proc.MainWindowHandle != IntPtr.Zero)
+                    {
+                        // Use Windows API to restore and bring window to front
+                        NativeMethods.ShowWindow(proc.MainWindowHandle, NativeMethods.SW_RESTORE);
+                        NativeMethods.SetForegroundWindow(proc.MainWindowHandle);
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"[App] Failed to bring existing instance to front: {ex.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Native Windows API methods for window management.
+    /// </summary>
+    internal static class NativeMethods
+    {
+        public const int SW_RESTORE = 9;
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern bool SetForegroundWindow(IntPtr hWnd);
     }
 }
