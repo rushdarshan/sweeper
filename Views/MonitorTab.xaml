@@ -6,7 +6,7 @@
       xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
       mc:Ignorable="d"
       Title="Monitor"
-      Background="#1A1A1A"
+      Background="#151515"
       Foreground="#FFFFFF">
 
     <Grid>
@@ -18,7 +18,7 @@
         </Grid.RowDefinitions>
 
         <!-- Top Toolbar -->
-        <Border Grid.Row="0" Background="#1A1A1A" Padding="20,16">
+        <Border Grid.Row="0" Background="#1A1A1A" Padding="20,16" BorderThickness="0,0,0,1" BorderBrush="#2D2D2D">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -27,88 +27,85 @@
                 </Grid.ColumnDefinitions>
                 
                 <!-- Left: Action Buttons -->
-                <StackPanel Orientation="Horizontal" Grid.Column="0">
-                    <Button x:Name="ClearAllBtn" Click="OnClearAllClick"
-                            Background="#2D2D2D" BorderThickness="0"
-                            Padding="16,8" Margin="0,0,8,0">
+                <StackPanel Orientation="Horizontal" Grid.Column="0" VerticalAlignment="Center">
+                    <Button x:Name="RefreshBtn" Click="OnRefreshClick"
+                            Background="#89b4fa" BorderThickness="0"
+                            Padding="14,8" Margin="0,0,12,0" Foreground="#1A1A1A" FontWeight="SemiBold">
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="Delete24" FontSize="16" Margin="0,0,8,0" Foreground="#9B8AFF"/>
-                            <TextBlock Text="Clear All" Foreground="#FFFFFF"/>
+                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="Refresh"/>
                         </StackPanel>
                     </Button>
                     
-                    <Button x:Name="RefreshBtn" Click="OnRefreshClick"
-                            Background="#2D2D2D" BorderThickness="0"
-                            Padding="16,8">
+                    <Button x:Name="ClearAllBtn" Click="OnClearAllClick"
+                            Background="#f38ba8" BorderThickness="0"
+                            Padding="14,8" Foreground="#1A1A1A" FontWeight="SemiBold">
                         <StackPanel Orientation="Horizontal">
-                            <ui:SymbolIcon Symbol="ArrowSync24" FontSize="16" Margin="0,0,8,0" Foreground="#9B8AFF"/>
-                            <TextBlock Text="Refresh" Foreground="#FFFFFF"/>
+                            <ui:SymbolIcon Symbol="Delete24" FontSize="16" Margin="0,0,8,0"/>
+                            <TextBlock Text="Clear All"/>
                         </StackPanel>
                     </Button>
                 </StackPanel>
                 
-                <!-- Right: Search Box -->
-                <Border Grid.Column="2" Background="#2D2D2D" CornerRadius="4" Padding="12,8">
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Search24" FontSize="16" Foreground="#808080" Margin="0,0,8,0"/>
+                <!-- Right: Search Box - More prominent -->
+                <Border Grid.Column="2" Background="#252530" CornerRadius="6" Padding="12,8" BorderBrush="#3d3d4d" BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <ui:SymbolIcon Symbol="Search24" FontSize="16" Foreground="#6c7086" Margin="0,0,8,0"/>
                         <TextBox x:Name="SearchBox" 
                                  Background="Transparent" 
                                  BorderThickness="0"
-                                 Foreground="#FFFFFF"
-                                 Width="180"
+                                 Foreground="#cdd6f4"
+                                 Width="200"
                                  VerticalAlignment="Center"
-                                 CaretBrush="#FFFFFF"
-                                 TextChanged="OnSearchTextChanged"/>
+                                 CaretBrush="#cdd6f4"
+                                 TextChanged="OnSearchTextChanged"
+                                 Padding="0"/>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
-        <!-- Column Headers -->
-        <Border Grid.Row="1" Background="#1E1E1E" Padding="20,12">
+        <!-- Column Headers - Cleaner layout -->
+        <Border Grid.Row="1" Background="#1A1A2E" Padding="20,14" BorderThickness="0,0,0,2" BorderBrush="#313244">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="40"/>
-                    <ColumnDefinition Width="*" MinWidth="250"/>
-                    <ColumnDefinition Width="100"/>
-                    <ColumnDefinition Width="140"/>
-                    <ColumnDefinition Width="120"/>
-                    <ColumnDefinition Width="140"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
                 <CheckBox x:Name="SelectAllCheckBox" Grid.Column="0" 
                           VerticalAlignment="Center"
                           Checked="OnSelectAllChecked" Unchecked="OnSelectAllUnchecked"/>
                 
-                <TextBlock Grid.Column="1" Text="⬍ Name" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="2" Text="⬍ Size" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="3" Text="⬍ Status" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="4" Text="⬍ Time Left" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                <TextBlock Grid.Column="5" Text="⬍ Detected" Foreground="#808080" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="FILES" Foreground="#cdd6f4" FontWeight="Bold" FontSize="11" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="DELETES IN" Foreground="#cdd6f4" FontWeight="Bold" FontSize="11" VerticalAlignment="Center" Margin="0,0,20,0"/>
             </Grid>
         </Border>
 
         <!-- File List + Preview -->
-        <Grid Grid.Row="2" Background="#1A1A1A">
+        <Grid Grid.Row="2" Background="#151515">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition x:Name="DividerColumn" Width="0"/>
+                <ColumnDefinition x:Name="PreviewColumn" Width="0"/>
             </Grid.ColumnDefinitions>
 
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#1A1A1A" Grid.Column="0">
+            <!-- File List -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Background="#151515" Grid.Column="0" Padding="0,12,0,0">
                 <ItemsControl x:Name="FileListControl">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border x:Name="RowBorder" Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="#2D2D2D"
-                                    Background="Transparent" MouseLeftButtonUp="OnRowClick">
+                            <Border x:Name="RowBorder" Padding="20,12" BorderThickness="0,0,0,1" BorderBrush="#252525"
+                                    Background="Transparent" MouseLeftButtonUp="OnRowClick" Cursor="Hand">
                             <Border.Style>
                                 <Style TargetType="Border">
                                     <Style.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#252525"/>
+                                            <Setter Property="Background" Value="#1E1E2E"/>
                                         </Trigger>
                                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                            <Setter Property="Background" Value="#2A2850"/>
+                                            <Setter Property="Background" Value="#313244"/>
                                         </DataTrigger>
                                     </Style.Triggers>
                                 </Style>
@@ -116,108 +113,53 @@
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="40"/>
-                                    <ColumnDefinition Width="*" MinWidth="250"/>
-                                    <ColumnDefinition Width="100"/>
-                                    <ColumnDefinition Width="140"/>
-                                    <ColumnDefinition Width="120"/>
-                                    <ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 
                                 <!-- Checkbox -->
                                 <CheckBox Grid.Column="0" IsChecked="{Binding IsSelected, Mode=TwoWay}" 
                                           VerticalAlignment="Center"/>
                                 
-                                <!-- File Name with Icon -->
-                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                    <Border Background="#2D2D2D" CornerRadius="4" Padding="8" Margin="0,0,12,0">
-                                        <ui:SymbolIcon Symbol="Image24" FontSize="18" Foreground="#9B8AFF"/>
-                                    </Border>
-                                    <StackPanel VerticalAlignment="Center">
+                                <!-- File Name with Size and Detected -->
+                                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Background="#2D2D2D" CornerRadius="4" Padding="6" Margin="0,0,10,0" VerticalAlignment="Center">
+                                            <ui:SymbolIcon Symbol="Image24" FontSize="16" Foreground="#89b4fa"/>
+                                        </Border>
                                         <TextBlock Text="{Binding FileName}" 
                                                    Foreground="#FFFFFF" 
-                                                   FontSize="14"
+                                                   FontSize="13"
+                                                   FontWeight="SemiBold"
                                                    TextTrimming="CharacterEllipsis"
-                                                   MaxWidth="220"/>
-                                        <TextBlock Text="Image" 
-                                                   Foreground="#606060" 
-                                                   FontSize="11"/>
+                                                   MaxWidth="400"
+                                                   VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                        <TextBlock Text="{Binding FileSizeFormatted}" Foreground="#6c7086" FontSize="11" Margin="0,0,12,0"/>
+                                        <TextBlock Text="{Binding DetectedAtFormatted}" Foreground="#585b70" FontSize="11"/>
                                     </StackPanel>
                                 </StackPanel>
                                 
-                                <!-- Size -->
-                                <TextBlock Grid.Column="2" 
-                                           Text="{Binding FileSizeFormatted}" 
-                                           Foreground="#FFFFFF" 
-                                           VerticalAlignment="Center"/>
-                                
-                                <!-- Status with Progress -->
-                                <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                                    <TextBlock VerticalAlignment="Center" FontSize="13">
+                                <!-- Simple Countdown Timer - No progress bar -->
+                                <Border Grid.Column="2" Margin="0,0,16,0" VerticalAlignment="Center">
+                                    <TextBlock FontSize="13" FontWeight="Bold" Margin="0">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
-                                                <Setter Property="Text" Value="Scheduled"/>
-                                                <Setter Property="Foreground" Value="#4CAF50"/>
+                                                <Setter Property="Text" Value="{Binding TimeUntilDeletionFormatted}"/>
+                                                <Setter Property="Foreground" Value="#a6e3a1"/>
                                                 <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding IsUrgent}" Value="True">
-                                                        <Setter Property="Text" Value="Deleting Soon"/>
-                                                        <Setter Property="Foreground" Value="#F44336"/>
-                                                    </DataTrigger>
                                                     <DataTrigger Binding="{Binding IsWarning}" Value="True">
-                                                        <Setter Property="Text" Value="Warning"/>
-                                                        <Setter Property="Foreground" Value="#FFC107"/>
+                                                        <Setter Property="Foreground" Value="#f9e2af"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsUrgent}" Value="True">
+                                                        <Setter Property="Foreground" Value="#f38ba8"/>
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>
                                     </TextBlock>
-                                    <!-- Progress bar showing time remaining -->
-                                    <Border Height="3" CornerRadius="2" Background="#2D2D2D" Margin="0,4,16,0">
-                                        <Border x:Name="ProgressFill" 
-                                                HorizontalAlignment="Left"
-                                                CornerRadius="2"
-                                                Width="{Binding ProgressWidth}">
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Background" Value="#4CAF50"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsUrgent}" Value="True">
-                                                            <Setter Property="Background" Value="#F44336"/>
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding IsWarning}" Value="True">
-                                                            <Setter Property="Background" Value="#FFC107"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                        </Border>
-                                    </Border>
-                                </StackPanel>
-                                
-                                <!-- Time Left -->
-                                <TextBlock Grid.Column="4" 
-                                           Text="{Binding TimeUntilDeletionFormatted}" 
-                                           VerticalAlignment="Center"
-                                           FontWeight="SemiBold">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Foreground" Value="#4CAF50"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding IsWarning}" Value="True">
-                                                    <Setter Property="Foreground" Value="#FFC107"/>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding IsUrgent}" Value="True">
-                                                    <Setter Property="Foreground" Value="#F44336"/>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                                
-                                <!-- Detected Time -->
-                                <TextBlock Grid.Column="5" 
-                                           Text="{Binding DetectedAtFormatted}" 
-                                           Foreground="#808080" 
-                                           VerticalAlignment="Center"/>
+                                </Border>
                             </Grid>
                         </Border>
                     </DataTemplate>
@@ -225,52 +167,75 @@
             </ItemsControl>
             </ScrollViewer>
 
-            <!-- Preview Panel -->
-            <StackPanel x:Name="PreviewPanel" Grid.Column="1" Background="#161616" Margin="12,0,0,0" Visibility="Collapsed">
-                <TextBlock Text="Preview" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF" Margin="0,0,0,8"/>
-                <Border Height="1" Background="#2D2D2D" Margin="0,0,0,12"/>
+            <!-- Divider -->
+            <Border Grid.Column="1" Background="#2D2D2D" Width="1"/>
 
-                <Border Background="#0F0F0F" CornerRadius="8" Padding="8" Margin="0,0,0,12" BorderBrush="#2D2D2D" BorderThickness="1">
-                    <Grid>
-                        <Image x:Name="PreviewImage" Stretch="Uniform" MaxHeight="320" RenderOptions.BitmapScalingMode="HighQuality"/>
-                        <TextBlock x:Name="PreviewErrorText" Text="Preview unavailable" Foreground="#808080" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="Collapsed"/>
-                    </Grid>
-                </Border>
+            <!-- Preview Panel - Calmer styling -->
+            <Grid x:Name="PreviewPanel" Grid.Column="2" Background="#1A1A24" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid Grid.Row="0" Margin="20,16,20,12">
+                    <TextBlock Text="Preview" FontSize="14" FontWeight="Bold" Foreground="#FFFFFF" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                    <Button x:Name="ClosePreviewBtn" Click="OnClosePreviewClick" Content="✕" 
+                            Background="Transparent" Foreground="#808080" BorderThickness="0"
+                            Padding="6,2" FontSize="16" HorizontalAlignment="Right" VerticalAlignment="Center" Width="30"/>
+                </Grid>
+                <StackPanel Grid.Row="1" Margin="20,0,20,12">
+                    <Border Background="#0F0F0F" CornerRadius="8" Padding="12" Margin="0,0,0,12" BorderBrush="#2D2D2D" BorderThickness="1" MinHeight="200">
+                        <Grid>
+                            <Image x:Name="PreviewImage" Stretch="Uniform" MaxHeight="300" RenderOptions.BitmapScalingMode="HighQuality"/>
+                            <!-- Generic file placeholder when preview unavailable -->
+                            <StackPanel x:Name="PreviewErrorPanel" Visibility="Collapsed" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                <Border Background="#1E1E2E" CornerRadius="12" Padding="20" HorizontalAlignment="Center">
+                                    <ui:SymbolIcon Symbol="Image24" FontSize="48" Foreground="#45475a"/>
+                                </Border>
+                                <TextBlock x:Name="PreviewErrorText" Text="Preview unavailable" Foreground="#585b70" FontSize="11" HorizontalAlignment="Center" Margin="0,12,0,0"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
 
-                <StackPanel Margin="0,0,0,12">
-                    <TextBlock x:Name="PreviewName" Foreground="#FFFFFF" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="PreviewSize" Foreground="#A0A0A0" Margin="0,2,0,0"/>
-                    <TextBlock x:Name="PreviewDetected" Foreground="#A0A0A0" Margin="0,2,0,0"/>
-                    <TextBlock x:Name="PreviewTimeLeft" Foreground="#A0A0A0" Margin="0,2,0,0"/>
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock x:Name="PreviewName" Foreground="#FFFFFF" FontWeight="Bold" FontSize="12" TextTrimming="CharacterEllipsis" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="PreviewSize" Foreground="#a6adc8" FontSize="11" Margin="0,0,0,2"/>
+                        <TextBlock x:Name="PreviewDetected" Foreground="#a6adc8" FontSize="11" Margin="0,0,0,2"/>
+                        <TextBlock x:Name="PreviewTimeLeft" Foreground="#a6adc8" FontSize="11"/>
+                    </StackPanel>
+
+                    <StackPanel Orientation="Vertical" Margin="0,8,0,0">
+                        <Button x:Name="OpenFileButton" Click="OnOpenFileClick" Content="Open Image" Padding="12,8" 
+                                Background="#a6e3a1" Foreground="#1A1A1A" BorderThickness="0" FontWeight="SemiBold" FontSize="12" Margin="0,0,0,8"/>
+                        <Button x:Name="OpenFolderButton" Click="OnOpenFolderClick" Content="Show in Folder" Padding="12,8" 
+                                Background="#313244" Foreground="#FFFFFF" BorderThickness="0" FontSize="12"/>
+                    </StackPanel>
                 </StackPanel>
-
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
-                    <Button x:Name="OpenFileButton" Click="OnOpenFileClick" Content="Open Image" Padding="12,6" Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0" Margin="0,0,8,0"/>
-                    <Button x:Name="OpenFolderButton" Click="OnOpenFolderClick" Content="Show in Folder" Padding="12,6" Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0"/>
-                </StackPanel>
-            </StackPanel>
+            </Grid>
         </Grid>
         
         <!-- Empty State -->
         <StackPanel x:Name="EmptyMessage"
                    Grid.Row="2"
-                   Grid.ColumnSpan="2"
                    VerticalAlignment="Center"
                    HorizontalAlignment="Center"
                    Visibility="Collapsed">
-            <Border Background="#2D2D2D" CornerRadius="8" Padding="16" HorizontalAlignment="Center" Margin="0,0,0,16">
-                <ui:SymbolIcon Symbol="Image24" FontSize="48" Foreground="#9B8AFF"/>
+            <Border Background="#2D2D2D" CornerRadius="12" Padding="24" HorizontalAlignment="Center" Margin="0,0,0,20">
+                <ui:SymbolIcon Symbol="Image24" FontSize="64" Foreground="#a6e3a1"/>
             </Border>
-            <TextBlock Text="No screenshots tracked"
-                       FontSize="18"
-                       FontWeight="SemiBold"
+            <TextBlock Text="No screenshots yet"
+                       FontSize="20"
+                       FontWeight="Bold"
                        HorizontalAlignment="Center"
-                       Foreground="#FFFFFF"/>
-            <TextBlock Text="Take a screenshot to get started!"
-                       FontSize="14"
+                       Foreground="#FFFFFF"
+                       Margin="0,0,0,8"/>
+            <TextBlock Text="Take a screenshot to get started. ScreenshotSweeper will monitor and list them here."
+                       FontSize="13"
                        HorizontalAlignment="Center"
-                       Margin="0,4,0,0"
-                       Foreground="#606060"/>
+                       Margin="0,0,0,0"
+                       Foreground="#a6adc8"
+                       TextWrapping="Wrap"
+                       MaxWidth="300"
+                       TextAlignment="Center"/>
         </StackPanel>
 
         <!-- Bottom Status Bar -->

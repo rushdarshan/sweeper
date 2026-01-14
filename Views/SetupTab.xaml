@@ -8,181 +8,208 @@
       mc:Ignorable="d" 
       d:DesignHeight="700" d:DesignWidth="900"
       Title="Setup"
-      Background="#1A1A1A"
+      Background="#151515"
       Foreground="#FFFFFF"
       ScrollViewer.VerticalScrollBarVisibility="Auto">
 
-    <ScrollViewer x:Name="RootScrollViewer" 
-                  VerticalScrollBarVisibility="Auto" 
-                  HorizontalScrollBarVisibility="Disabled"
-                  PanningMode="Both"
-                  CanContentScroll="False">
-        <StackPanel Margin="24,20">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <ScrollViewer Grid.Row="0" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Margin="24,20,24,0">
             
-            <!-- Page Header -->
-            <TextBlock Text="Setup" 
-                       FontSize="28" 
-                       FontWeight="Bold"
-                       Foreground="#FFFFFF"
-                       Margin="0,0,0,8"/>
-            <TextBlock Text="Configure screenshot monitoring and auto-delete settings"
-                       FontSize="14"
-                       Foreground="#808080"
-                       Margin="0,0,0,24"/>
+                <!-- Page Header -->
+                <TextBlock Text="Setup" 
+                           FontSize="24" 
+                           FontWeight="Bold"
+                           Foreground="#FFFFFF"
+                           Margin="0,0,0,4"/>
+                <TextBlock Text="Configure screenshot monitoring and auto-delete"
+                           FontSize="13"
+                           Foreground="#6c7086"
+                           Margin="0,0,0,20"/>
 
-            <!-- Screenshot Folder Card -->
-            <Border Background="#1E1E1E" CornerRadius="8" Padding="20" Margin="0,0,0,16">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <Border Background="#2D2D2D" CornerRadius="6" Padding="10" Margin="0,0,12,0">
-                            <ui:SymbolIcon Symbol="Folder24" FontSize="20" Foreground="#9B8AFF"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Screenshot Folder" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                            <TextBlock Text="Location to monitor for new screenshots" FontSize="12" Foreground="#808080"/>
-                        </StackPanel>
-                    </StackPanel>
-                    
-                    <Grid Margin="0,0,0,12">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <Border Background="#2D2D2D" CornerRadius="4" Padding="12,10" Margin="0,0,12,0">
-                            <TextBlock x:Name="FolderPathTextBox" 
-                                       Text="Select a folder..."
-                                       Foreground="#FFFFFF"
-                                       VerticalAlignment="Center"
-                                       TextTrimming="CharacterEllipsis"/>
-                        </Border>
-                                 
-                        <Button x:Name="BrowseButton" 
-                                Grid.Column="1" 
-                                Click="BrowseFolder"
-                                Background="#9B8AFF"
-                                Foreground="#FFFFFF"
-                                BorderThickness="0"
-                                Padding="20,10">
-                            <StackPanel Orientation="Horizontal">
-                                <ui:SymbolIcon Symbol="FolderOpen24" FontSize="16" Margin="0,0,8,0"/>
-                                <TextBlock Text="Browse"/>
+                <!-- Screenshot Folder Card - Brightest (first priority) -->
+                <Border Background="#22222E" CornerRadius="10" Margin="0,0,0,16">
+                    <StackPanel Margin="18">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <Border Background="#313244" CornerRadius="8" Padding="10" Margin="0,0,12,0">
+                                <ui:SymbolIcon Symbol="Folder24" FontSize="20" Foreground="#89b4fa"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Screenshot Folder" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Location to monitor for screenshots" FontSize="11" Foreground="#6c7086"/>
                             </StackPanel>
-                        </Button>
-                    </Grid>
-                    
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Info24" FontSize="14" Foreground="#808080" Margin="0,0,8,0"/>
-                        <TextBlock Text="This folder will be monitored for new screenshots" Foreground="#808080" FontSize="12"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Auto-Delete Timer Card -->
-            <Border Background="#1E1E1E" CornerRadius="8" Padding="20" Margin="0,0,0,16">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <Border Background="#2D2D2D" CornerRadius="6" Padding="10" Margin="0,0,12,0">
-                            <ui:SymbolIcon Symbol="Clock24" FontSize="20" Foreground="#9B8AFF"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Auto-Delete Timer" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                            <TextBlock Text="How long to keep screenshots before deletion" FontSize="12" Foreground="#808080"/>
+                        </StackPanel>
+                        
+                        <Grid Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Border Background="#313244" CornerRadius="6" Padding="12,10" Margin="0,0,10,0" 
+                                    ToolTipService.InitialShowDelay="200">
+                                <Border.ToolTip>
+                                    <TextBlock x:Name="FolderPathTooltip" Text="Full path"/>
+                                </Border.ToolTip>
+                                <TextBlock x:Name="FolderPathTextBox" 
+                                           Text="Select a folder..."
+                                           Foreground="#cdd6f4"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           FontSize="13"/>
+                            </Border>
+                                     
+                            <Button x:Name="BrowseButton" 
+                                    Grid.Column="1" 
+                                    Click="BrowseFolder"
+                                    Background="#89b4fa"
+                                    Foreground="#1A1A1A"
+                                    BorderThickness="0"
+                                    Padding="16,10"
+                                    FontWeight="SemiBold">
+                                <StackPanel Orientation="Horizontal">
+                                    <ui:SymbolIcon Symbol="FolderOpen24" FontSize="14" Margin="0,0,6,0"/>
+                                    <TextBlock Text="Browse"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Info16" FontSize="12" Foreground="#6c7086" Margin="0,0,6,0"/>
+                            <TextBlock Text="This folder will be monitored for new screenshots" Foreground="#6c7086" FontSize="11"/>
                         </StackPanel>
                     </StackPanel>
-                    
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
-                        <Border Background="#2D2D2D" CornerRadius="4" Padding="4" Margin="0,0,12,0">
-                            <ui:NumberBox x:Name="DeleteTimeValue" 
-                                          Width="100"
-                                          Value="30" 
-                                          SpinButtonPlacementMode="Compact"
-                                          Minimum="1" 
-                                          Maximum="999"
-                                          Background="Transparent"
-                                          BorderThickness="0"/>
+                </Border>
+
+                <!-- Auto-Delete Timer Card - Normal (second priority) -->
+                <Border Background="#1E1E2E" CornerRadius="10" Margin="0,0,0,16">
+                    <StackPanel Margin="18">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <Border Background="#313244" CornerRadius="8" Padding="10" Margin="0,0,12,0">
+                                <ui:SymbolIcon Symbol="Clock24" FontSize="20" Foreground="#f9e2af"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Auto-Delete Timer" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="How long to keep screenshots" FontSize="11" Foreground="#6c7086"/>
+                            </StackPanel>
+                        </StackPanel>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                            <Border Background="#313244" CornerRadius="6" Padding="4" Margin="0,0,10,0">
+                                <ui:NumberBox x:Name="DeleteTimeValue" 
+                                              Width="100"
+                                              Value="30" 
+                                              SpinButtonPlacementMode="Compact"
+                                              Minimum="1" 
+                                              Maximum="999"
+                                              Background="Transparent"
+                                              BorderThickness="0"/>
+                            </Border>
+                            
+                            <ComboBox x:Name="TimeUnitSelector" 
+                                      Width="130"
+                                      Background="#313244"
+                                      BorderThickness="0">
+                                <ComboBoxItem Content="Minutes" IsSelected="True"/>
+                                <ComboBoxItem Content="Hours"/>
+                                <ComboBoxItem Content="Days"/>
+                            </ComboBox>
+                        </StackPanel>
+                        
+                        <!-- Quick Presets - Pill style chips -->
+                        <TextBlock Text="Quick Presets" FontWeight="Medium" Foreground="#6c7086" FontSize="12" Margin="0,0,0,10"/>
+                        <WrapPanel>
+                            <Border Background="#313244" CornerRadius="16" Margin="0,0,8,8" Cursor="Hand" MouseLeftButtonUp="SetPreset15Min">
+                                <TextBlock Text="15 min" Foreground="#cdd6f4" FontSize="12" Padding="14,6"/>
+                            </Border>
+                            <Border Background="#313244" CornerRadius="16" Margin="0,0,8,8" Cursor="Hand" MouseLeftButtonUp="SetPreset30Min">
+                                <TextBlock Text="30 min" Foreground="#cdd6f4" FontSize="12" Padding="14,6"/>
+                            </Border>
+                            <Border Background="#313244" CornerRadius="16" Margin="0,0,8,8" Cursor="Hand" MouseLeftButtonUp="SetPreset1Hour">
+                                <TextBlock Text="1 hour" Foreground="#cdd6f4" FontSize="12" Padding="14,6"/>
+                            </Border>
+                            <Border Background="#313244" CornerRadius="16" Margin="0,0,8,8" Cursor="Hand" MouseLeftButtonUp="SetPreset3Days">
+                                <TextBlock Text="3 days" Foreground="#cdd6f4" FontSize="12" Padding="14,6"/>
+                            </Border>
+                            <Border Background="#313244" CornerRadius="16" Margin="0,0,8,8" Cursor="Hand" MouseLeftButtonUp="PresetKeepForever">
+                                <TextBlock Text="30 days" Foreground="#cdd6f4" FontSize="12" Padding="14,6"/>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Keep Folder Card - Slightly darker (lowest priority) -->
+                <Border Background="#1A1A26" CornerRadius="10" Margin="0,0,0,20">
+                    <StackPanel Margin="18">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                            <Border Background="#313244" CornerRadius="8" Padding="10" Margin="0,0,12,0">
+                                <ui:SymbolIcon Symbol="StarEmphasis24" FontSize="20" Foreground="#a6e3a1"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Keep Folder" FontSize="15" FontWeight="SemiBold" Foreground="#FFFFFF"/>
+                                <TextBlock Text="Files moved here are never deleted" FontSize="11" Foreground="#6c7086"/>
+                            </StackPanel>
+                        </StackPanel>
+                        
+                        <Border Background="#252530" CornerRadius="6" Padding="12,10" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="KeepFolderTextBox" 
+                                           Text="Auto-generated in screenshot folder"
+                                           Foreground="#a6adc8"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           FontSize="13"
+                                           FontStyle="Italic"/>
+                                <ui:SymbolIcon Grid.Column="1" Symbol="LockClosed16" FontSize="14" Foreground="#585b70" VerticalAlignment="Center" ToolTip="Read-only - Auto-generated"/>
+                            </Grid>
                         </Border>
                         
-                        <ComboBox x:Name="TimeUnitSelector" 
-                                  Width="140"
-                                  Background="#2D2D2D"
-                                  BorderThickness="0">
-                            <ComboBoxItem Content="Minutes" IsSelected="True"/>
-                            <ComboBoxItem Content="Hours"/>
-                            <ComboBoxItem Content="Days"/>
-                        </ComboBox>
-                    </StackPanel>
-                    
-                    <!-- Quick Presets -->
-                    <TextBlock Text="Quick Presets" FontWeight="SemiBold" Foreground="#808080" FontSize="12" Margin="0,0,0,12"/>
-                    <StackPanel Orientation="Horizontal">
-                        <Button x:Name="Preset15MinBtn" Content="15 Min" Click="SetPreset15Min" 
-                                Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0"
-                                Padding="16,8" Margin="0,0,8,0"/>
-                        <Button x:Name="Preset30MinBtn" Content="30 Min" Click="SetPreset30Min"
-                                Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0"
-                                Padding="16,8" Margin="0,0,8,0"/>
-                        <Button x:Name="Preset1HourBtn" Content="1 Hour" Click="SetPreset1Hour"
-                                Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0"
-                                Padding="16,8" Margin="0,0,8,0"/>
-                        <Button x:Name="Preset3DaysBtn" Content="3 Days" Click="SetPreset3Days"
-                                Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0"
-                                Padding="16,8" Margin="0,0,8,0"/>
-                        <Button x:Name="PresetForeverBtn" Content="30 Days" Click="PresetKeepForever"
-                                Background="#2D2D2D" Foreground="#FFFFFF" BorderThickness="0"
-                                Padding="16,8"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Keep Folder Card -->
-            <Border Background="#1E1E1E" CornerRadius="8" Padding="20" Margin="0,0,0,24">
-                <StackPanel>
-                    <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
-                        <Border Background="#2D2D2D" CornerRadius="6" Padding="10" Margin="0,0,12,0">
-                            <ui:SymbolIcon Symbol="StarEmphasis24" FontSize="20" Foreground="#4CAF50"/>
-                        </Border>
-                        <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Keep Folder" FontSize="16" FontWeight="SemiBold" Foreground="#FFFFFF"/>
-                            <TextBlock Text="Files moved here are never deleted" FontSize="12" Foreground="#808080"/>
+                        <StackPanel Orientation="Horizontal">
+                            <ui:SymbolIcon Symbol="Shield16" FontSize="12" Foreground="#a6e3a1" Margin="0,0,6,0"/>
+                            <TextBlock Text="Protected from auto-deletion" Foreground="#a6e3a1" FontSize="11"/>
                         </StackPanel>
                     </StackPanel>
-                    
-                    <Border Background="#2D2D2D" CornerRadius="4" Padding="12,10" Margin="0,0,0,12">
-                        <TextBlock x:Name="KeepFolderTextBox" 
-                                   Text="Auto-generated in screenshot folder"
-                                   Foreground="#808080"
-                                   VerticalAlignment="Center"
-                                   TextTrimming="CharacterEllipsis"/>
-                    </Border>
-                    
-                    <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Shield24" FontSize="14" Foreground="#4CAF50" Margin="0,0,8,0"/>
-                        <TextBlock Text="Protected from auto-deletion" Foreground="#4CAF50" FontSize="12"/>
-                    </StackPanel>
-                </StackPanel>
-            </Border>
+                </Border>
 
-            <!-- Save Button -->
-            <StackPanel Orientation="Horizontal">
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- FOOTER - Anchored Save Button -->
+        <Border Grid.Row="1" Background="#1A1A2E" Padding="24,14" BorderThickness="0,1,0,0" BorderBrush="#313244">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock x:Name="StatusMessage" 
+                           VerticalAlignment="Center" 
+                           FontWeight="Medium"
+                           FontSize="13"
+                           Foreground="#a6e3a1"/>
+
                 <Button x:Name="SaveButton" 
+                        Grid.Column="1"
                         Click="SaveSettings"
-                        Background="#9B8AFF"
-                        Foreground="#FFFFFF"
+                        Background="#a6e3a1"
+                        Foreground="#1A1A1A"
                         BorderThickness="0"
                         Padding="24,12">
                     <StackPanel Orientation="Horizontal">
-                        <ui:SymbolIcon Symbol="Save24" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="Save Settings" FontWeight="SemiBold"/>
+                        <ui:SymbolIcon Symbol="Save24" FontSize="14" Margin="0,0,8,0"/>
+                        <TextBlock Text="Save Settings" FontWeight="Bold"/>
                     </StackPanel>
                 </Button>
-                        
-                <TextBlock x:Name="StatusMessage" 
-                           VerticalAlignment="Center" 
-                           FontWeight="SemiBold"
-                           Margin="16,0,0,0"/>
-            </StackPanel>
-            
-        </StackPanel>
-    </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
 </Page>

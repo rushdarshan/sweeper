@@ -56,12 +56,19 @@ namespace ScreenshotSweeper.Views
         {
             var searchText = SearchBox?.Text?.ToLower() ?? "";
             
+            // Filter out 0-byte files (corrupt/incomplete) and apply search
+            var validFiles = _currentFiles.Where(f => f.FileSizeBytes > 0);
+            
             _filteredFiles = string.IsNullOrEmpty(searchText) 
-                ? _currentFiles.ToList() 
-                : _currentFiles.Where(f => f.FileName.ToLower().Contains(searchText)).ToList();
+                ? validFiles.ToList() 
+                : validFiles.Where(f => f.FileName.ToLower().Contains(searchText)).ToList();
             
             FileListControl.ItemsSource = _filteredFiles;
             EmptyMessage.Visibility = _filteredFiles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            
+            // Disable Clear All button when no files
+            ClearAllBtn.IsEnabled = _filteredFiles.Count > 0;
+            ClearAllBtn.Opacity = _filteredFiles.Count > 0 ? 1.0 : 0.5;
             
             UpdateStatusBar(_filteredFiles);
 
@@ -214,33 +221,47 @@ namespace ScreenshotSweeper.Views
             }
         }
 
+        private void OnPreviewButtonClick(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.DataContext is ScreenshotMetadata metadata)
+            {
+                _previewFile = metadata;
+                UpdatePreview(metadata);
+            }
+        }
+
         private void UpdatePreview(ScreenshotMetadata file)
         {
+            // Show preview panel and expand columns
             PreviewPanel.Visibility = Visibility.Visible;
+            DividerColumn.Width = new GridLength(1, GridUnitType.Auto);
+            PreviewColumn.Width = new GridLength(350);
+            
             PreviewName.Text = file.FileName;
             PreviewSize.Text = $"Size: {file.FileSizeFormatted}";
             PreviewDetected.Text = $"Detected: {file.DetectedAtFormatted}";
             PreviewTimeLeft.Text = $"Time left: {file.TimeUntilDeletionFormatted}";
 
             PreviewImage.Source = null;
-            PreviewErrorText.Visibility = Visibility.Collapsed;
+            PreviewErrorPanel.Visibility = Visibility.Collapsed;
 
             try
             {
                 var bmp = new BitmapImage();
                 bmp.BeginInit();
                 bmp.CacheOption = BitmapCacheOption.OnLoad;
-                bmp.UriSource = new Uri(file.FilePath);
+                bmp.UriSource = new Uri(file.FilePath, UriKind.Absolute);
                 bmp.DecodePixelWidth = 600;
                 bmp.EndInit();
                 bmp.Freeze();
                 PreviewImage.Source = bmp;
+                Console.WriteLine($"[MonitorTab] Preview loaded: {file.FileName}");
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"[MonitorTab] Preview load failed: {ex.Message}");
-                PreviewErrorText.Text = "Preview unavailable";
-                PreviewErrorText.Visibility = Visibility.Visible;
+                PreviewErrorText.Text = "Unable to preview image";
+                PreviewErrorPanel.Visibility = Visibility.Visible;
             }
         }
 
@@ -248,8 +269,7 @@ namespace ScreenshotSweeper.Views
         {
             if (_previewFile == null)
             {
-                PreviewPanel.Visibility = Visibility.Collapsed;
-                PreviewImage.Source = null;
+                HidePreviewPanel();
                 return;
             }
 
@@ -260,10 +280,17 @@ namespace ScreenshotSweeper.Views
             }
             else
             {
-                PreviewPanel.Visibility = Visibility.Collapsed;
-                PreviewImage.Source = null;
+                HidePreviewPanel();
                 _previewFile = null;
             }
+        }
+
+        private void HidePreviewPanel()
+        {
+            PreviewPanel.Visibility = Visibility.Collapsed;
+            DividerColumn.Width = new GridLength(0);
+            PreviewColumn.Width = new GridLength(0);
+            PreviewImage.Source = null;
         }
 
         private void OnOpenFileClick(object sender, RoutedEventArgs e)
@@ -298,6 +325,12 @@ namespace ScreenshotSweeper.Views
             {
                 Console.WriteLine($"[MonitorTab] Failed to open folder: {ex.Message}");
             }
+        }
+
+        private void OnClosePreviewClick(object sender, RoutedEventArgs e)
+        {
+            HidePreviewPanel();
+            _previewFile = null;
         }
 
         private string FormatBytes(long bytes)

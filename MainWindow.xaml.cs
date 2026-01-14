@@ -6,6 +6,7 @@ using Wpf.Ui.Controls;
 using Wpf.Ui.Appearance;
 using ScreenshotSweeper.Views;
 using System;
+using System.ComponentModel;
 
 namespace ScreenshotSweeper
 {
@@ -17,6 +18,8 @@ namespace ScreenshotSweeper
             
             // Navigate to Monitor tab on startup
             Loaded += MainWindow_Loaded;
+            // Intercept close to hide to tray instead of exiting
+            Closing += MainWindow_Closing;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -51,6 +54,18 @@ namespace ScreenshotSweeper
                     return result;
             }
             return null;
+        }
+
+        private void MainWindow_Closing(object? sender, CancelEventArgs e)
+        {
+            // Cancel the close and hide the window so the app continues running in the tray.
+            // Use the tray Exit menu to actually shut down the application.
+            e.Cancel = true;
+            try
+            {
+                this.Hide();
+            }
+            catch { /* Non-fatal */ }
         }
     }
 }

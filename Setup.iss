@@ -61,9 +61,15 @@ Source: "Resources\Icons\sweeper_128x128.png"; DestDir: "{app}\Resources\Icons";
 Source: "Resources\Icons\sweeper_256x256.png"; DestDir: "{app}\Resources\Icons"; Flags: ignoreversion
 
 [Icons]
+; Start Menu shortcut (all users via {group}, also user programs for better search indexing)
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Resources\Icons\sweeper.ico"
+Name: "{userprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Resources\Icons\sweeper.ico"
 Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\Resources\Icons\sweeper.ico"; Tasks: desktopicon
+
+[Registry]
+; Auto-start at Windows login (per-user, no admin required)
+Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"" --minimized"; Flags: uninsdeletevalue
 
 [Run]
 ; Run setup wizard after installation to configure the app

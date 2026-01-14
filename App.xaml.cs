@@ -26,6 +26,10 @@ namespace ScreenshotSweeper
         {
             base.OnStartup(e);
 
+            // Prevent app from shutting down when main window closes —
+            // we'll control shutdown explicitly (tray Exit menu calls Shutdown()).
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
             // Parse command-line arguments
             _setupMode = e.Args.Contains("--setup", StringComparer.OrdinalIgnoreCase);
             _startMinimized = e.Args.Contains("--minimized", StringComparer.OrdinalIgnoreCase);
