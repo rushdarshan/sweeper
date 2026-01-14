@@ -2,7 +2,7 @@
 ; Download Inno Setup from: https://jrsoftware.org/isdl.php
 
 #define MyAppName "ScreenshotSweeper"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.0.2"
 #define MyAppPublisher "darshan-aids"
 #define MyAppURL "https://github.com/rushdarshan/sweeper"
 #define MyAppExeName "ScreenshotSweeper.exe"
@@ -36,7 +36,7 @@ DisableWelcomePage=no
 
 ; License and Info
 LicenseFile=LICENSE
-InfoBeforeFile=README.md
+InfoBeforeFile=README-Installer.txt
 
 ; Uninstall
 UninstallDisplayIcon={app}\{#MyAppExeName}
