@@ -100,11 +100,20 @@ namespace ScreenshotSweeper.Services
 
         private void OnOpenApp(object? sender, EventArgs e)
         {
-            var mainWindow = System.Windows.Application.Current?.MainWindow as MainWindow;
-            if (mainWindow != null)
+            // Must dispatch to WPF UI thread since tray runs on WinForms thread
+            System.Windows.Application.Current?.Dispatcher.Invoke(() =>
             {
-                mainWindow.RestoreFromTray();
-            }
+                var mainWindow = System.Windows.Application.Current?.MainWindow as MainWindow;
+                if (mainWindow != null)
+                {
+                    Console.WriteLine("[TrayIconService] Restoring window from tray");
+                    mainWindow.RestoreFromTray();
+                }
+                else
+                {
+                    Console.WriteLine("[TrayIconService] MainWindow is null!");
+                }
+            });
         }
 
         private void OnToggleMonitoring(object? sender, EventArgs e)

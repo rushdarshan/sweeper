@@ -22,9 +22,11 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <ui:TitleBar Grid.Row="0" Grid.ColumnSpan="2" 
+        <ui:TitleBar x:Name="TitleBar"
+                     Grid.Row="0" Grid.ColumnSpan="2" 
                      Title="ScreenshotSweeper" 
-                     ForceShutdown="True"/>
+                     CloseWindowByDoubleClickOnIcon="False"
+                     CloseClicked="TitleBar_CloseClicked"/>
 
         <ui:NavigationView x:Name="NavView" 
                            Grid.Row="1"

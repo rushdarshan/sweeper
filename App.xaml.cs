@@ -82,7 +82,6 @@ namespace ScreenshotSweeper
             FileMonitorService = new FileMonitorService(config);
             CleanupService = new CleanupService(FileMonitorService, NotificationService);
             TrayService = new TrayIconService(ConfigService);
-            TrayService.ShowInfo("ScreenshotSweeper", "Running in the system tray");
 
             // Start monitoring if folder is configured
             if (!string.IsNullOrEmpty(config.ScreenshotFolderPath))
@@ -107,10 +106,11 @@ namespace ScreenshotSweeper
 
             if (shouldMinimize)
             {
-                // Start minimized to system tray — completely hidden, no taskbar entry
+                // Start minimized to system tray — must Show first then Hide for proper initialization
                 MainWindow.WindowState = WindowState.Minimized;
                 MainWindow.ShowInTaskbar = false;
-                MainWindow.Hide();
+                MainWindow.Show(); // Show first to initialize the window
+                MainWindow.Hide(); // Then hide
                 System.Console.WriteLine("[App] Started minimized to system tray (hidden)");
             }
             else

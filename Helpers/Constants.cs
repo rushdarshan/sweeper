@@ -10,8 +10,8 @@ namespace ScreenshotSweeper.Helpers
         
         // Monitoring intervals
         public const int FILE_MONITOR_POLL_INTERVAL_MS = 1000;
-        public const int CLEANUP_CHECK_INTERVAL_MS = 10000;  // 10 seconds
-        public const int UI_REFRESH_INTERVAL_MS = 5000;      // 5 seconds
+        public const int CLEANUP_CHECK_INTERVAL_MS = 2000;   // 2 seconds - fast cleanup checks
+        public const int UI_REFRESH_INTERVAL_MS = 2000;      // 2 seconds - responsive UI updates
 
         // Notification action identifiers
         public const string ACTION_SET_TIMER = "set_timer";
