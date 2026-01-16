@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using ScreenshotSweeper.Models;
 
 namespace ScreenshotSweeper.Helpers
@@ -67,6 +68,41 @@ namespace ScreenshotSweeper.Helpers
         }
 
         /// <summary>
+        /// Gets file size in bytes, with retry logic for locked files (async)
+        /// </summary>
+        public static async Task<long> GetFileSizeAsync(string filePath, int retries = 5)
+        {
+            for (int i = 0; i < retries; i++)
+            {
+                try
+                {
+                    if (!File.Exists(filePath))
+                        return 0;
+
+                    var fileInfo = new FileInfo(filePath);
+                    fileInfo.Refresh();
+
+                    if (fileInfo.Length == 0 && i < retries - 1)
+                    {
+                        await Task.Delay(500);
+                        continue;
+                    }
+
+                    return fileInfo.Length;
+                }
+                catch (IOException) when (i < retries - 1)
+                {
+                    await Task.Delay(500);
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+            return 0;
+        }
+
+        /// <summary>
         /// Safely deletes a file with retry logic
         /// </summary>
         public static bool DeleteFile(string filePath, int retries = 3)
@@ -84,6 +120,33 @@ namespace ScreenshotSweeper.Helpers
                 catch (IOException) when (i < retries - 1)
                 {
                     System.Threading.Thread.Sleep(100);
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Safely deletes a file with retry logic (async)
+        /// </summary>
+        public static async Task<bool> DeleteFileAsync(string filePath, int retries = 3)
+        {
+            for (int i = 0; i < retries; i++)
+            {
+                try
+                {
+                    if (!File.Exists(filePath))
+                        return true;
+
+                    File.Delete(filePath);
+                    return true;
+                }
+                catch (IOException) when (i < retries - 1)
+                {
+                    await Task.Delay(100);
                 }
                 catch
                 {
@@ -120,6 +183,40 @@ namespace ScreenshotSweeper.Helpers
                 }
 
                 File.Move(filePath, destPath, overwrite: false);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Safely moves a file to the Keep folder (async)
+        /// </summary>
+        public static async Task<bool> MoveToKeepFolderAsync(string filePath, string keepFolderPath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                    return false;
+
+                if (!Directory.Exists(keepFolderPath))
+                    Directory.CreateDirectory(keepFolderPath);
+
+                var fileName = Path.GetFileName(filePath);
+                var destPath = Path.Combine(keepFolderPath, fileName);
+
+                int counter = 1;
+                while (File.Exists(destPath))
+                {
+                    var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+                    var ext = Path.GetExtension(fileName);
+                    destPath = Path.Combine(keepFolderPath, $"{nameWithoutExt}_{counter}{ext}");
+                    counter++;
+                }
+
+                await Task.Run(() => File.Move(filePath, destPath, overwrite: false));
                 return true;
             }
             catch

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using ScreenshotSweeper.Helpers;
 using ScreenshotSweeper.Models;
 
@@ -97,7 +98,7 @@ namespace ScreenshotSweeper.Services
             return tracked;
         }
 
-        private void OnFileCreated(object sender, FileSystemEventArgs e)
+        private async void OnFileCreated(object sender, FileSystemEventArgs e)
         {
             // DUPLICATE PREVENTION: Ignore if file was recently added
             if (_recentlyAddedFiles.Contains(e.FullPath))
@@ -108,8 +109,8 @@ namespace ScreenshotSweeper.Services
 
             if (FileHelper.IsValidScreenshot(e.FullPath, _config.AllowedExtensions))
             {
-                // Longer delay to ensure file is fully written (screenshots can be large)
-                System.Threading.Thread.Sleep(1500);
+                // Async delay to ensure file is fully written (screenshots can be large)
+                await Task.Delay(1500);
 
                 if (File.Exists(e.FullPath) && !_trackedFiles.Contains(e.FullPath))
                 {
@@ -117,7 +118,7 @@ namespace ScreenshotSweeper.Services
                     _recentlyAddedFiles.Add(e.FullPath);
                     
                     // Remove from recently added list after timeout
-                    _ = System.Threading.Tasks.Task.Delay(DUPLICATE_TIMEOUT_MS)
+                    _ = Task.Delay(DUPLICATE_TIMEOUT_MS)
                         .ContinueWith(_ => _recentlyAddedFiles.Remove(e.FullPath));
 
                     _trackedFiles.Add(e.FullPath);
