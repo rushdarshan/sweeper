@@ -194,21 +194,6 @@ Open an issue or submit a pull request.
 
 ---
 
-## 📄 License
-
-MIT License
-© 2026 Darshan K
-
----
-
-## 🙏 Credits
-
-* Design inspired by **Mark App (Android)**
-* UI: ModernWPF
-* Notifications: Windows Community Toolkit
-
----
-
 ## 🎯 Why ScreenshotSweeper?
 
 Because screenshots are temporary by nature.
