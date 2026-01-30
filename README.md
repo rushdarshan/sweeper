@@ -196,7 +196,28 @@ Open an issue or submit a pull request.
 
 ## 🎯 Why ScreenshotSweeper?
 
+<<<<<<< HEAD
 Because screenshots are temporary by nature.
 Your storage should treat them that way.
 
+=======
+MIT License
+© 2026 Darshan K
+
+---
+
+## 🙏 Credits
+
+* Design inspired by **Mark App (Android)**
+* UI: ModernWPF
+* Notifications: Windows Community Toolkit
+
+---
+
+## 🎯 Why ScreenshotSweeper?
+
+Because screenshots are temporary by nature.
+Your storage should treat them that way.
+
+>>>>>>> 00904d4 (chore(release): update installer README and rebuild script)
 > **Take freely. Keep only what matters. Delete the rest automatically.**

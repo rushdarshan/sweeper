@@ -70,6 +70,9 @@ if (-not $SkipInstaller) {
         }
     }
     
+    # Use the manually curated InstallerInfo.rtf for Inno Setup InfoBeforeFile
+    Write-Host "  ✓ Using InstallerInfo.rtf for setup information" -ForegroundColor Green
+
     if ($null -eq $ISCC) {
         Write-Host "  ⚠ Inno Setup not found!" -ForegroundColor Yellow
         Write-Host "  Please install Inno Setup from: https://jrsoftware.org/isdl.php" -ForegroundColor Yellow

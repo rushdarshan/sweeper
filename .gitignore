@@ -48,7 +48,23 @@ htmlcov/
 # Local app data (config files, screenshots)
 AppData/
 
-# Installer output
+# Build and publish output
+publish/
 Installer/
-*.exe
-!Setup.iss
+
+# Log files
+*.log
+
+# Miscellaneous local files
+*.suo
+*.user
+*.slnx
+.vs/
+*.tmp
+*.bak
+
+# Remove duplicate or unneeded files
+README.txt
+LICENSE.txt
+InstallerInfo.rtf
+Resources/Icons/generate-icon.ps1

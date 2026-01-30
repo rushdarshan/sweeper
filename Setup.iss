@@ -35,8 +35,8 @@ DisableProgramGroupPage=yes
 DisableWelcomePage=no
 
 ; License and Info
-LicenseFile=LICENSE
-InfoBeforeFile=README-Installer.txt
+LicenseFile=LICENSE.txt
+InfoBeforeFile=InstallerInfo.rtf
 
 ; Uninstall
 UninstallDisplayIcon={app}\{#MyAppExeName}

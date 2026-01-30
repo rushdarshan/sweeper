@@ -296,18 +296,107 @@ namespace ScreenshotSweeper.Views
         private void OnOpenFileClick(object sender, RoutedEventArgs e)
         {
             if (_previewFile == null) return;
+            if (!System.IO.File.Exists(_previewFile.FilePath))
+            {
+                MessageBox.Show("File not found on disk.", "Open Image", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var filePath = _previewFile.FilePath;
+            var ext = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+
+            // Before trying to launch, verify the file is accessible (this handles OneDrive online-only placeholders).
+            try
+            {
+                using var stream = System.IO.File.Open(filePath, System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.Read);
+            }
+            catch (Exception accessEx)
+            {
+                Console.WriteLine($"[MonitorTab] File not accessible for reading: {accessEx.Message}");
+                MessageBox.Show("The file is not available locally (it may be stored in OneDrive or another cloud provider).\nOpening its folder so you can download or open it manually.", "Open Image", MessageBoxButton.OK, MessageBoxImage.Information);
+                try
+                {
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "explorer.exe",
+                        Arguments = $"/select,\"{filePath}\"",
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception exSel)
+                {
+                    Console.WriteLine($"[MonitorTab] Explorer select failed while handling inaccessible file: {exSel.Message}");
+                }
+                return;
+            }
+
+            // Try to open with the system default (open verb) which should launch Photos or the default image viewer
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = filePath,
+                    UseShellExecute = true,
+                    Verb = "open",
+                    WorkingDirectory = System.IO.Path.GetDirectoryName(filePath) ?? ""
+                };
+                Process.Start(psi);
+                return;
+            }
+            catch (Exception ex1)
+            {
+                Console.WriteLine($"[MonitorTab] Default open (verb=open) failed: {ex1.Message}");
+            }
+
+            // Try launching via explorer (should delegate to registered handler)
             try
             {
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = _previewFile.FilePath,
+                    FileName = "explorer.exe",
+                    Arguments = $"\"{filePath}\"",
                     UseShellExecute = true
                 });
+                return;
             }
-            catch (Exception ex)
+            catch (Exception ex2)
             {
-                Console.WriteLine($"[MonitorTab] Failed to open file: {ex.Message}");
+                Console.WriteLine($"[MonitorTab] Explorer open failed: {ex2.Message}");
             }
+
+            // Show the "Open With" dialog so user may choose an app
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "rundll32.exe",
+                    Arguments = $"shell32,OpenAs_RunDLL \"{filePath}\"",
+                    UseShellExecute = true
+                });
+                return;
+            }
+            catch (Exception ex3)
+            {
+                Console.WriteLine($"[MonitorTab] OpenWith dialog failed: {ex3.Message}");
+            }
+
+            // As a last visual fallback, show file in File Explorer (selected)
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "explorer.exe",
+                    Arguments = $"/select,\"{filePath}\"",
+                    UseShellExecute = true
+                });
+                return;
+            }
+            catch (Exception ex4)
+            {
+                Console.WriteLine($"[MonitorTab] Explorer select failed: {ex4.Message}");
+            }
+
+            MessageBox.Show("Unable to open image with the system default apps. You can use 'Show in Folder' to locate the file and open it manually.", "Open Image", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void OnOpenFolderClick(object sender, RoutedEventArgs e)
