@@ -27,12 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Resources\Icons\sweeper.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Resources\Icons\sweeper_*.png">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <Resource Include="Resources\Icons\sweeper.ico" />
+    <Resource Include="Resources\Icons\sweeper_*.png" />
   </ItemGroup>
 
 </Project>

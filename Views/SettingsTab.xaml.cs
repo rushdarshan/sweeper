@@ -98,7 +98,7 @@ namespace ScreenshotSweeper.Views
 
                 if (enable)
                 {
-                    var exePath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName;
+                    var exePath = Environment.ProcessPath;
                     if (!string.IsNullOrEmpty(exePath))
                     {
                         // Start minimized so it goes straight to tray
